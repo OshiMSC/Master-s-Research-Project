@@ -32,7 +32,7 @@ from sklearn.model_selection import train_test_split
 # ── Config ────────────────────────────────────────────────
 BASE          = os.path.dirname(os.path.abspath(__file__))
 DATASETS      = os.path.join(BASE, "datasets")
-AUGMENTED_DIR = os.path.join(DATASETS, "augmented")
+AUGMENTED_DIR = os.path.join(DATASETS, "augmented_v2")
 MANIFEST_PATH = os.path.join(DATASETS, "dataset_manifest.csv")
 
 TARGET_SR     = 22050
