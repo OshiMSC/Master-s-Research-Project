@@ -15,8 +15,16 @@ class MainActivity : FlutterActivity() {
     private val CHANNEL = "com.resqnet.sms/send"
     private val SMS_PERMISSION_CODE = 101
 
+    // Classic Bluetooth fallback beacon — second, independent broadcast
+    // channel used when BLE peripheral advertising is unreliable on the
+    // device's hardware.
+    private lateinit var classicBeacon: ClassicBeaconHandler
+
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+
+        classicBeacon = ClassicBeaconHandler(this)
+        classicBeacon.attach(flutterEngine)
 
         MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
@@ -132,5 +140,16 @@ class MainActivity : FlutterActivity() {
             @Suppress("DEPRECATION")
             SmsManager.getDefault()
         }
+    }
+
+    // ── Forward the discoverable-mode dialog result ──────────────
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: android.content.Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        classicBeacon.onActivityResult(requestCode, resultCode)
+    }
+
+    override fun onDestroy() {
+        classicBeacon.dispose()
+        super.onDestroy()
     }
 }

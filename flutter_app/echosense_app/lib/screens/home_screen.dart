@@ -6,6 +6,8 @@ import '../services/gps_service.dart';
 import '../services/sms_service.dart';
 import '../services/chirp_service.dart';
 import '../services/mesh_service.dart';
+import '../services/bluetooth_permissions.dart';
+import 'mesh_scanner_screen.dart';
 import 'active_emergency_screen.dart';
 
 abstract class ResQColors {
@@ -35,6 +37,7 @@ class _HomeScreenState extends State<HomeScreen>
   bool   _isHolding     = false;
   double _holdProgress  = 0.0;
   bool   _chirpActive   = false;
+  bool _alertActiveLocked = false;
   bool   _flashActive   = false;
   String _systemStatus  = 'All Systems Ready';
   Color  _systemColor   = ResQColors.green;
@@ -45,8 +48,6 @@ class _HomeScreenState extends State<HomeScreen>
   bool   _meshActive        = false;
   bool   _meshScanning      = false;
   int    _meshDeviceCount   = 0;
-  int    _resqnetDeviceCount = 0;
-  List<MeshDevice> _nearbyDevicesList = [];
   int    _meshRelayCount    = 0;
   String _meshStatus        = '';
   String _meshRole          = '';
@@ -96,6 +97,19 @@ class _HomeScreenState extends State<HomeScreen>
     _fetchGps();
     _setupMeshCallbacks();
 
+    // FIX: explicitly request BLUETOOTH_ADVERTISE/SCAN/CONNECT at
+    // runtime. The manifest declares these correctly, but on Android
+    // 12+ that alone does NOT grant them — the user must approve a
+    // system dialog, and nothing was previously triggering it. Without
+    // this, every BLE advertise call fails identically with
+    // PlatformException(18, ..., startAdvertisingSet, null) regardless
+    // of phone brand/chipset, because the failure happens at the
+    // Android permission-check layer before reaching the radio at all.
+    // Requesting it here (app launch) rather than only at emergency
+    // time means the dialog interrupts the user during calm setup,
+    // not during an actual distress event.
+    BluetoothPermissions.ensureGranted();
+
     // ── Setup chirp beacon callback ───────────────────────
     // When beacon button pressed → self-report alert immediately
     ChirpService.onBeaconStarted = () => _handleBeaconAlert();
@@ -124,17 +138,17 @@ class _HomeScreenState extends State<HomeScreen>
     MeshService.onStatusUpdate = (msg) {
       if (!mounted) return;
       setState(() {
-        _meshStatus  = msg;
+        _meshStatus   = msg;
         _meshScanning = MeshService.isScanning;
+        // Keep mesh active indicator while broadcasting
+        if (MeshService.isActive) _meshActive = true;
       });
     };
     MeshService.onDevicesUpdated = (devices) {
       if (!mounted) return;
       setState(() {
-        _nearbyDevicesList  = devices;
-        _meshDeviceCount    = devices.length;
-        _resqnetDeviceCount = devices.where((d) => d.isResQNet).length;
-        _meshScanning       = false;
+        _meshDeviceCount = devices.length;
+        _meshScanning    = false;
       });
     };
     MeshService.onPacketReceived = (packet) {
@@ -144,8 +158,8 @@ class _HomeScreenState extends State<HomeScreen>
         _meshRole             = 'RELAY';
         _alertSentViaMesh     = true;
         _meshActive           = true;
-        _lastRelayOrigin      = packet.originId;
-        _lastRelaySoundType   = packet.soundType;
+        _lastRelayOrigin      = packet.displayOrigin;
+        _lastRelaySoundType   = packet.soundTypeFull;
         _lastRelayConfidence  = packet.confidence;
         _meshStatus = '✓ Packet from ${packet.originId} — relaying...';
       });
@@ -185,6 +199,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (mounted) {
       setState(() {
+        _alertActiveLocked = true;
         _systemStatus  = 'DISTRESS CONFIRMED';
         _systemColor   = ResQColors.red;
         _smsSent       = false;
@@ -203,7 +218,7 @@ class _HomeScreenState extends State<HomeScreen>
     if (mounted) {
       setState(() {
         _smsSent      = sent;
-        _telegramSent = true;
+        _telegramSent = sent;
       });
     }
 
@@ -243,6 +258,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (mounted) {
       setState(() {
+        _alertActiveLocked = true;
         _systemStatus  = 'BEACON ACTIVE';
         _systemColor   = ResQColors.orange;
         _smsSent       = false;
@@ -264,8 +280,8 @@ class _HomeScreenState extends State<HomeScreen>
       if (mounted) {
         setState(() {
           _smsSent       = sent;
-          _telegramSent  = true;
-          _dashboardSent = true;
+          _telegramSent  = sent;
+          _dashboardSent = sent;
         });
       }
       print('HomeScreen: Beacon alert sent — SMS:$sent Dashboard:✓ Telegram:✓');
@@ -282,6 +298,20 @@ class _HomeScreenState extends State<HomeScreen>
     );
 
     print('HomeScreen: Beacon complete — SMS+Dashboard+Telegram+BLE');
+    
+    if (!mounted) return;
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ActiveEmergencyScreen(
+              soundType:    'Acoustic Beacon (SOS)',
+              confidence:   1.0,
+              latitude:     lat,
+              longitude:    lng,
+              alreadySent:  true,   // SMS sent in _handleBeaconAlert above
+            ),
+          ),
+        );
   }
 
   // ── BLE mesh broadcast ────────────────────────────────────
@@ -293,19 +323,41 @@ class _HomeScreenState extends State<HomeScreen>
   }) async {
     if (!mounted) return;
     setState(() {
-      _meshActive = true;
-      _meshRole   = 'VICTIM';
-      _meshStatus = 'Broadcasting via BLE mesh...';
+      _meshActive   = true;
+      _meshRole     = 'VICTIM';
+      _meshScanning = true;
+      _meshStatus   = 'Starting BLE mesh...';
     });
+
+    // Defensive re-check: if the user denied Bluetooth permissions at
+    // app launch (or the initial request was dismissed without a clear
+    // answer) but granted them later via system Settings, this catches
+    // that case right before the broadcast that actually needs them.
+    // Cheap to call — returns instantly if already granted, no dialog
+    // shown twice.
+    final btOk = await BluetoothPermissions.ensureGranted();
+    if (!btOk) {
+      print('HomeScreen: Bluetooth permissions not granted — '
+            'BLE mesh advertising will fail. SMS/Telegram/Dashboard '
+            'channels are unaffected.');
+      if (mounted) setState(() {
+        _meshStatus = 'Bluetooth permission denied — BLE mesh unavailable';
+      });
+      // Don't return early: SMS/Dashboard/Telegram already happened
+      // via sendSosAlert() before this is called, so the alert isn't
+      // lost — only the BLE mesh fallback layer is degraded. Still
+      // attempt startMesh()/broadcastAlert() below in case scanning
+      // (a different permission) still works even if advertising won't.
+    }
+
     try {
-      // Stop existing mesh first to clear _isActive guard
-      // then restart fresh so broadcastAlert works correctly
+      // Always stop first to clear _isActive guard
       if (MeshService.isActive) {
         await MeshService.stopMesh();
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 400));
       }
       await MeshService.startMesh();
-      await Future.delayed(const Duration(milliseconds: 200));
+      await Future.delayed(const Duration(milliseconds: 300));
       await MeshService.broadcastAlert(
         latitude:   latitude,
         longitude:  longitude,
@@ -314,16 +366,28 @@ class _HomeScreenState extends State<HomeScreen>
         battery:    85,
       );
       print('HomeScreen: BLE mesh broadcast started ✓');
-      if (mounted) setState(() => _meshStatus = 'Broadcasting alert via BLE mesh...');
+      if (mounted) setState(() {
+        _meshStatus   = 'Alert broadcasting via BLE mesh...';
+        _meshScanning = true;
+      });
     } catch (e) {
       print('HomeScreen: Mesh failed — $e');
-      if (mounted) setState(() => _meshStatus = 'Mesh unavailable: $e');
+      if (mounted) setState(() {
+        _meshStatus   = 'Mesh error: $e';
+        _meshScanning = false;
+      });
     }
   }
 
   // ── Status callback ───────────────────────────────────────
   void _handleStatusChanged(VadStatus status) {
     if (!mounted) return;
+    // GUARD: If an alert is actively processing or locked, 
+    // do not let changing background audio levels overwrite the screen state!
+    if (_alertActiveLocked || _systemStatus == 'DISTRESS CONFIRMED' || _systemStatus == 'BEACON ACTIVE') {
+      print('HomeScreen: VAD status change ignored because an emergency alert is active.');
+      return;
+    }
     setState(() {
       switch (status) {
         case VadStatus.silence:
@@ -361,31 +425,44 @@ class _HomeScreenState extends State<HomeScreen>
 
     if (mounted) {
       setState(() {
+        _alertActiveLocked = true;
         _systemStatus  = 'DISTRESS CONFIRMED';
         _systemColor   = ResQColors.red;
         _smsSent       = false;
         _telegramSent  = false;
         _dashboardSent = false;
+        _meshActive    = true;
       });
     }
-
-    // SMS + Telegram + Dashboard in one call
-    final sent = await SmsService.sendSosAlert(
-      latitude:   lat,
-      longitude:  lng,
-      confidence: 1.0,
-      soundType:  'Manual SOS (button pressed)',
-    );
+    // 1. Attempt standard network/SMS gateway alert
+    bool pipelineSuccess = false;
+    try {
+      pipelineSuccess = await SmsService.sendSosAlert(
+        latitude:   lat,
+        longitude:  lng,
+        confidence: 1.0,
+        soundType:  'Manual SOS (button pressed)',
+      );
+    } catch (e) {
+      print('HomeScreen: Primary network pipeline error: $e');
+      pipelineSuccess = false;
+    }
 
     if (mounted) {
       setState(() {
-        _smsSent       = sent;
-        _telegramSent  = true;
-        _dashboardSent = true;
+        _smsSent       = pipelineSuccess;
+        _telegramSent  = pipelineSuccess;   
+        _dashboardSent = pipelineSuccess;   
       });
     }
+    if (!pipelineSuccess) {
+      print('HomeScreen: No network — BLE mesh will carry alert');
+      if (mounted) setState(() =>
+          _meshStatus = 'No Network — using BLE mesh...');
+      HapticFeedback.vibrate();
+    }
 
-    // BLE mesh broadcast
+    // BLE mesh broadcast (works without internet)
     await _startMeshBroadcast(
       latitude:   lat,
       longitude:  lng,
@@ -396,10 +473,11 @@ class _HomeScreenState extends State<HomeScreen>
     if (!mounted) return;
     Navigator.push(context, MaterialPageRoute(
       builder: (_) => ActiveEmergencyScreen(
-        soundType:  'Manual SOS (button pressed)',
-        confidence: 1.0,
-        latitude:   lat,
-        longitude:  lng,
+        soundType:    'Manual SOS (button pressed)',
+        confidence:   1.0,
+        latitude:     lat,
+        longitude:    lng,
+        alreadySent:  true,   // SMS already sent above — skip duplicate
       )));
   }
 
@@ -505,20 +583,29 @@ class _HomeScreenState extends State<HomeScreen>
       Row(children: [
         _sIcon('📡', ResQColors.green),
         const SizedBox(width: 5),
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: 28, height: 28,
-          decoration: BoxDecoration(
-            color: _meshActive
-                ? ResQColors.blue.withOpacity(0.25)
-                : ResQColors.blue.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.push(context, MaterialPageRoute(
+              builder: (_) => MeshScannerScreen(
+                activePacketOrigin: _lastRelayOrigin,
+              )));
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            width: 28, height: 28,
+            decoration: BoxDecoration(
               color: _meshActive
-                  ? ResQColors.blue.withOpacity(0.8)
-                  : ResQColors.blue.withOpacity(0.3))),
-          child: const Center(
-            child: Icon(Icons.bluetooth, color: ResQColors.blue, size: 14))),
+                  ? ResQColors.blue.withOpacity(0.25)
+                  : ResQColors.blue.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _meshActive
+                    ? ResQColors.blue.withOpacity(0.8)
+                    : ResQColors.blue.withOpacity(0.3))),
+            child: const Center(
+              child: Icon(Icons.bluetooth, color: ResQColors.blue, size: 14))),
+        ),
         const SizedBox(width: 5),
         _sIcon('📍', ResQColors.green),
       ]),
@@ -658,7 +745,7 @@ class _HomeScreenState extends State<HomeScreen>
             onStatusUpdate:  (msg) => setState(() => _meshStatus = msg),
             onPacketRelayed: (p)   => setState(() {
               _meshRelayCount++;
-              _meshStatus = 'Relayed: ${p.originId.substring(0, 8)}';
+              _meshStatus = 'Relayed: ${p.displayOrigin.substring(0, 8)}';
             }),
           );
         }
@@ -824,51 +911,11 @@ class _HomeScreenState extends State<HomeScreen>
 
       // ── Stats row ─────────────────────────────────────
       Row(children: [
-        Expanded(child: _meshStat(Icons.devices,
-          '$_meshDeviceCount', 'All BT')),
-        Expanded(child: _meshStat(Icons.app_shortcut,
-          '$_resqnetDeviceCount', 'ResQNet')),
-        Expanded(child: _meshStat(Icons.swap_horiz,
-          '$_meshRelayCount', 'Relayed')),
-        Expanded(child: _meshStat(Icons.radar,
-          _meshScanning ? 'ON' : 'OFF', 'Scanning')),
+        Expanded(child: _meshStat(Icons.devices,    '$_meshDeviceCount', 'Nearby')),
+        Expanded(child: _meshStat(Icons.swap_horiz, '$_meshRelayCount',  'Relayed')),
+        Expanded(child: _meshStat(Icons.radar,      _meshScanning ? 'ON' : 'OFF', 'Scanning')),
+        Expanded(child: _meshStat(Icons.alt_route,  '${MeshService.MAX_HOPS}', 'Max Hops')),
       ]),
-      // ResQNet device list
-      if (_resqnetDeviceCount > 0) ...[
-        const SizedBox(height: 8),
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: ResQColors.blue.withOpacity(0.08),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: ResQColors.blue.withOpacity(0.3))),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('ResQNet Nodes Detected:',
-                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
-                  color: ResQColors.blue)),
-              const SizedBox(height: 4),
-              ..._nearbyDevicesList
-                .where((d) => d.isResQNet)
-                .map((d) => Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: Row(children: [
-                    const Icon(Icons.bluetooth_connected,
-                      color: ResQColors.green, size: 13),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(
-                      d.deviceId.substring(0,d.deviceId.length < 17 ? d.deviceId.length : 17),
-                      style: const TextStyle(
-                        fontFamily: 'Courier New', fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFCCCCCC)))),
-                    Text('${d.rssi} dBm',
-                      style: const TextStyle(
-                        fontSize: 10, color: ResQColors.textHint)),
-                  ]))),
-            ])),
-      ],
 
       // ── Status message ────────────────────────────────
       if (_meshStatus.isNotEmpty) ...[

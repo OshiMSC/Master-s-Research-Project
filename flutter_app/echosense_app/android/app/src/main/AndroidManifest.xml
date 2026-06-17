@@ -46,28 +46,28 @@
      <!-- ── Vibration ─────────────────────── -->
     <uses-permission android:name="android.permission.VIBRATE"/>
 
-    <!-- Bluetooth permissions for mesh networking -->
-
-    android:usesPermissionFlags="neverForLocation"/>
-
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
- 
-    <!-- ── Bluetooth Mesh (API 31+) ──────── -->
-    <!-- For Android 12 and above -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
- 
-    <!-- For Android 11 and below -->
-    <uses-permission android:name="android.permission.BLUETOOTH"
-        android:maxSdkVersion="30"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"
-        android:maxSdkVersion="30"/>
  
     <!-- BLE hardware feature -->
     <uses-feature android:name="android.hardware.bluetooth_le"
                   android:required="false"/>
+     
+    
+
+
+   <!-- Tell Google Play Store that your app uses Bluetooth LE
+     Set android:required="true" if bluetooth is necessary -->
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
+
+<!-- New Bluetooth permissions in Android 12
+https://developer.android.com/about/versions/12/features/bluetooth-permissions -->
+<uses-permission android:name="android.permission.BLUETOOTH_SCAN"/>
+<uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"/>
+
+<!-- legacy for Android 11 or lower -->
+<uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
+
 
     <application
         android:label="ResQNet"

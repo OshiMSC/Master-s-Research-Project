@@ -25,7 +25,7 @@ class DatabaseService {
             phone       TEXT NOT NULL,
             email       TEXT,
             password    TEXT,
-            medical     TEXT,
+            address     TEXT,
             created_at  TEXT
           )
         ''');
@@ -121,12 +121,12 @@ class DatabaseService {
 class UserModel {
   final int?   id;
   final String name, phone;
-  final String? email, password, medical;
+  final String? email, password, address;
   final String? createdAt;
 
   const UserModel({
     this.id, required this.name, required this.phone,
-    this.email, this.password, this.medical, this.createdAt,
+    this.email, this.password, this.address, this.createdAt,
   });
 
   Map<String, dynamic> toMap() => {
@@ -135,7 +135,7 @@ class UserModel {
     'phone':      phone,
     'email':      email ?? '',
     'password':   password ?? '',
-    'medical':    medical ?? '',
+    'address':    address ?? '',
     'created_at': createdAt ?? DateTime.now().toIso8601String(),
   };
 
@@ -145,7 +145,7 @@ class UserModel {
     phone:     m['phone'] as String,
     email:     m['email'] as String?,
     password:  m['password'] as String?,
-    medical:   m['medical'] as String?,
+    address:   m['address'] as String?,
     createdAt: m['created_at'] as String?,
   );
 }

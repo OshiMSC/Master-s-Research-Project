@@ -237,9 +237,7 @@ class SmsService {
     try {
       final prefs   = await SharedPreferences.getInstance();
       final rawIp   = prefs.getString('dashboard_ip') ?? '';
-      final cleanIp = rawIp.trim()
-          .replaceAll('%20', '')
-          .replaceAll(' ', '');
+      final cleanIp = _sanitizeIp(rawIp);
 
       if (cleanIp.isEmpty) {
         print('SmsService: No dashboard IP — skipping');
@@ -279,16 +277,56 @@ class SmsService {
   }
 
   // ── Dashboard IP helpers ──────────────────────────────────────
+  //
+  // BUG HISTORY (keep this sanitizer — do not simplify it away):
+  // a stray ":port" once ended up saved into 'dashboard_ip' (e.g.
+  // "192.168.10.202:48702"). Every call site that builds a dashboard
+  // URL appends ":5000" onto the stored value, so the resulting URL
+  // became "http://192.168.10.202:48702:5000/alert" — a malformed
+  // authority. Uri.parse resolved the FIRST ":NNNN" group as the
+  // actual port, silently routing every request to port 48702
+  // instead of 5000 ("No route to host" — there was nothing
+  // listening there). The printed log line still showed ":5000"
+  // because that's just string interpolation of the URL we
+  // *intended* to build, not what Uri.parse actually resolved.
+  //
+  // Fix: 'dashboard_ip' must never contain a port, scheme, or path —
+  // only a bare host/IP — enforced both when it is written AND when
+  // it is read, since mesh_service.dart reads it via getDashboardIp()
+  // directly and shouldn't have to trust this file's stored data.
+  static String _sanitizeIp(String raw) {
+    var ip = raw.trim().replaceAll('%20', '').replaceAll(' ', '');
+    if (ip.isEmpty) return '';
+    // Someone may paste a full URL ("http://host:5000/alert") into a
+    // settings field — strip the scheme first.
+    if (ip.contains('://')) {
+      ip = ip.split('://').last;
+    }
+    // Strip any path suffix (everything after the first '/').
+    ip = ip.split('/').first;
+    // Strip a trailing ':port' — this is what fixes the 48702 bug.
+    // A bare IPv4 host never contains ':', so anything after the
+    // first colon here is port data that doesn't belong in storage.
+    if (ip.contains(':')) {
+      ip = ip.split(':').first;
+    }
+    return ip;
+  }
+
   static Future<void> saveDashboardIp(String ip) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('dashboard_ip',
-        ip.trim().replaceAll('%20', '').replaceAll(' ', ''));
-    print('SmsService: Dashboard IP saved');
+    final clean = _sanitizeIp(ip);
+    await prefs.setString('dashboard_ip', clean);
+    print('SmsService: Dashboard IP saved as "$clean"');
   }
 
   static Future<String> getDashboardIp() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString('dashboard_ip') ?? '';
+    final raw   = prefs.getString('dashboard_ip') ?? '';
+    // Defense in depth: sanitize on read too, in case bad data is
+    // still sitting in prefs from before this fix existed (e.g. on
+    // a phone that already has the corrupted value saved).
+    return _sanitizeIp(raw);
   }
 
   // ── Time formatter ────────────────────────────────────────────

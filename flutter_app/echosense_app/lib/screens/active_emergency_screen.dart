@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import '../services/sms_service.dart';
 import '../services/database_service.dart';
 
-
 abstract class ResQColors {
   static const black   = Color(0xFF000000);
   static const bg2     = Color(0xFF0F0F0F);
@@ -21,12 +20,14 @@ class ActiveEmergencyScreen extends StatefulWidget {
   final double confidence;
   final double latitude;
   final double longitude;
+  final bool   alreadySent; // true = SMS already sent, skip duplicate
   const ActiveEmergencyScreen({
     super.key,
-    this.soundType  = 'Screaming',
-    this.confidence = 0.94,
-    this.latitude   = -36.8866,
-    this.longitude  = 174.7469,
+    this.soundType   = 'Screaming',
+    this.confidence  = 0.94,
+    this.latitude    = -36.8866,
+    this.longitude   = 174.7469,
+    this.alreadySent = false,
   });
   @override
   State<ActiveEmergencyScreen> createState() => _ActiveEmergencyScreenState();
@@ -80,13 +81,18 @@ class _ActiveEmergencyScreenState extends State<ActiveEmergencyScreen>
     if (!mounted) return;
     setState(() => _txStep = 1);
 
-    // Send real SMS
-    final smsSent = await SmsService.sendSosAlert(
-      latitude:   widget.latitude,
-      longitude:  widget.longitude,
-      confidence: widget.confidence,
-      soundType:  widget.soundType,
-    );
+    // Skip SMS if already sent upstream (avoid duplicates)
+    bool smsSent = widget.alreadySent;
+    if (!widget.alreadySent) {
+      smsSent = await SmsService.sendSosAlert(
+        latitude:   widget.latitude,
+        longitude:  widget.longitude,
+        confidence: widget.confidence,
+        soundType:  widget.soundType,
+      );
+    } else {
+      print('ActiveEmergencyScreen: SMS already sent — skipping duplicate');
+    }
     if (!mounted) return;
     setState(() {
       _txStep       = 2;

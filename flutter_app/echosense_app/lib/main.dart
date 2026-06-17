@@ -6,11 +6,11 @@ import 'screens/main_navigation.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/active_emergency_screen.dart';
-import 'screens/bluetooth_mesh_screen.dart';
 import 'screens/acoustic_beacon_screen.dart';
 import 'screens/about_screen.dart';
 import 'services/database_service.dart';
 import 'services/audio_service.dart';
+import 'services/background_audio_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +26,26 @@ void main() async {
   // Check if user is registered
   final isRegistered = await DatabaseService.isRegistered();
   print('Main: User registered = $isRegistered');
+
+  // Register the background service's entry point. This is cheap and
+  // has no side effects on its own (it does NOT start listening yet)
+  // — it just tells flutter_background_service what to run if/when
+  // start() is called below or later from home_screen.dart's
+  // Disaster Mode toggle.
+  await BackgroundAudioService.initialize();
+
+  // Only actually START background monitoring if the user has
+  // already registered — an unregistered user has no emergency
+  // contacts saved yet, so there'd be nowhere for an alert to go.
+  // Once registration completes, home_screen.dart's Disaster Mode
+  // toggle (the same place that already starts the foreground
+  // AudioService) is responsible for calling
+  // BackgroundAudioService.start() for newly-registered users in
+  // this same app session.
+  if (isRegistered) {
+    await BackgroundAudioService.start();
+    print('Main: Background monitoring started for registered user');
+  }
 
   runApp(ResQNetApp(isRegistered: isRegistered));
 }
@@ -68,7 +88,6 @@ class ResQNetApp extends StatelessWidget {
         '/register':      (_) => const RegistrationScreen(),
         '/login':         (_) => const LoginScreen(),
         '/main':          (_) => const MainNavigation(),
-        '/ble-mesh':      (_) => const BluetoothMeshScreen(),
         '/beacon':        (_) => const AcousticBeaconScreen(),
         '/about':         (_) => const AboutScreen(),
         
