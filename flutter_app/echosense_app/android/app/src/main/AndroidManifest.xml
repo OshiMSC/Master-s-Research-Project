@@ -102,6 +102,8 @@ https://developer.android.com/about/versions/12/features/bluetooth-permissions -
             android:foregroundServiceType="microphone"
             android:exported="true"
             tools:replace="android:exported"/>
+
+        <service android:name=".DistressDetectionService" android:foregroundServiceType="microphone" android:exported="false" />
         <!-- Boot receiver to restart monitoring after reboot -->
         <receiver
             android:name="id.flutter.flutter_background_service.BootReceiver"

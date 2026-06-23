@@ -37,8 +37,6 @@
     font-family: var(--font-ui); font-size: 13px;
     line-height: 1.5; min-height: 100vh; overflow-x: hidden;
   }
-
-  /* Header */
   .header {
     background: var(--bg-panel); border-bottom: 1px solid var(--border);
     padding: 0 24px; height: 56px;
@@ -69,8 +67,6 @@
   }
   #conn-status.connected    { border-color: var(--green); color: var(--green); background: var(--green-dim); }
   #conn-status.disconnected { border-color: var(--red);   color: var(--red);   background: var(--red-dim); }
-
-  /* Stats bar */
   .stats-bar {
     display: grid; grid-template-columns: repeat(5,1fr);
     gap: 1px; background: var(--border); border-bottom: 1px solid var(--border);
@@ -83,14 +79,10 @@
   .stat-value.green { color: var(--green); }
   .stat-value.blue  { color: var(--blue); }
   .stat-delta { font-size: 10px; color: var(--grey-mid); font-family: var(--font-mono); margin-top: 3px; }
-
-  /* Main layout */
   .main {
     display: grid; grid-template-columns: 360px 1fr 310px;
     height: calc(100vh - 56px - 57px);
   }
-
-  /* Panel */
   .panel {
     background: var(--bg-panel); border-right: 1px solid var(--border);
     overflow: hidden; display: flex; flex-direction: column;
@@ -109,8 +101,6 @@
   .panel-body { flex: 1; overflow-y: auto; padding: 10px; }
   .panel-body::-webkit-scrollbar { width: 3px; }
   .panel-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* Alert cards */
   .alert-card {
     background: var(--bg-card); border: 1px solid var(--border);
     border-radius: 8px; padding: 12px 13px; margin-bottom: 7px;
@@ -128,7 +118,6 @@
   .alert-card.selected.amber { border-color: var(--amber); background: var(--amber-dim); }
   .alert-card.selected.green { border-color: var(--green); background: var(--green-dim); }
   .alert-card.selected.blue  { border-color: var(--blue);  background: var(--blue-dim); }
-
   .alert-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 7px; }
   .alert-rank { font-size: 17px; font-weight: 700; font-family: var(--font-mono); color: var(--grey); width: 26px; flex-shrink: 0; text-align: center; }
   .alert-rank.p1 { color: var(--red); }
@@ -136,7 +125,6 @@
   .alert-rank.p3 { color: var(--blue); }
   .alert-id { font-family: var(--font-mono); font-size: 9px; color: var(--grey-mid); }
   .alert-sound { font-size: 12px; font-weight: 600; color: var(--white); }
-
   .badge {
     font-size: 9px; font-weight: 700; letter-spacing: .07em;
     text-transform: uppercase; padding: 2px 7px;
@@ -146,18 +134,15 @@
   .badge-high     { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
   .badge-medium   { background: var(--blue-dim);  color: var(--blue);  border: 1px solid var(--blue); }
   .badge-resolved { background: var(--green-dim); color: var(--green); border: 1px solid var(--green); }
-
+  .badge-chirp    { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber); }
   .alert-meta { display: flex; gap: 10px; flex-wrap: wrap; }
   .meta-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--grey-mid); font-family: var(--font-mono); }
   .meta-item svg { width: 11px; height: 11px; stroke: var(--grey-mid); }
-
   .conf-bar { margin-top: 8px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .conf-fill { height: 100%; border-radius: 2px; background: var(--red); transition: width .5s; }
   .conf-fill.amber { background: var(--amber); }
   .conf-fill.green { background: var(--green); }
   .conf-fill.blue  { background: var(--blue); }
-
-  /* Map */
   #map { width: 100%; height: 100%; }
   .map-wrap { position: relative; flex: 1; overflow: hidden; display: flex; flex-direction: column; }
   .map-controls {
@@ -172,8 +157,6 @@
   }
   .map-btn:hover { border-color: var(--blue); color: var(--blue); }
   .map-btn svg { width: 12px; height: 12px; stroke: currentColor; }
-
-  /* Right detail panel */
   .detail-section { border-bottom: 1px solid var(--border); padding: 13px 14px; }
   .detail-section:last-child { border-bottom: none; }
   .detail-label { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--grey-mid); font-family: var(--font-mono); margin-bottom: 9px; }
@@ -184,8 +167,6 @@
   .detail-field-value.red   { color: var(--red); }
   .detail-field-value.green { color: var(--green); }
   .detail-field-value.amber { color: var(--amber); }
-
-  /* Action buttons */
   .action-row { display: flex; gap: 7px; padding: 11px 13px; border-top: 1px solid var(--border); flex-shrink: 0; }
   .btn { flex:1; padding: 8px 0; border-radius: 6px; font-size: 10px; font-weight: 600; letter-spacing: .05em; font-family: var(--font-mono); cursor: pointer; border: 1px solid; transition: all .15s; display: flex; align-items: center; justify-content: center; gap: 5px; }
   .btn svg { width: 12px; height: 12px; stroke: currentColor; }
@@ -195,8 +176,6 @@
   .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
   .btn-success   { background: transparent; border-color: var(--green); color: var(--green); }
   .btn-success:hover { background: var(--green-dim); }
-
-  /* Activity feed */
   .feed-item { display: flex; gap: 9px; padding: 8px 0; border-bottom: 1px solid var(--border); }
   .feed-item:last-child { border-bottom: none; }
   .feed-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--grey); flex-shrink: 0; margin-top: 4px; }
@@ -207,15 +186,11 @@
   .feed-text { font-size: 11px; color: var(--grey-mid); line-height: 1.4; }
   .feed-text strong { color: var(--white); font-weight: 500; }
   .feed-time { font-size: 9px; color: var(--grey); font-family: var(--font-mono); margin-top: 1px; }
-
-  /* Empty states */
   .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; gap: 8px; }
   .empty-icon { width: 38px; height: 38px; border-radius: 9px; background: var(--bg-card); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 4px; }
   .empty-icon svg { width: 18px; height: 18px; stroke: var(--grey); }
   .empty-title { font-size: 12px; font-weight: 600; color: var(--grey-mid); }
   .empty-sub   { font-size: 11px; color: var(--grey); line-height: 1.5; }
-
-  /* Toast */
   #toast {
     position: fixed; bottom: 20px; left: 20px;
     background: var(--bg-panel); border: 1px solid var(--red);
@@ -227,12 +202,8 @@
   #toast.show { transform: translateY(0); opacity: 1; }
   #toast-icon { width: 30px; height: 30px; background: var(--red-dim); border-radius: 6px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   #toast-icon svg { width: 14px; height: 14px; stroke: var(--red); }
-
-  /* Flash */
   @keyframes flashIn { 0%{background:rgba(230,57,70,.3);border-color:var(--red)} 100%{background:var(--bg-card);border-color:var(--border)} }
   .flash { animation: flashIn 1.5s ease-out forwards; }
-
-  /* Leaflet */
   .leaflet-container { background: #080F18 !important; }
   .leaflet-tile-pane { filter: brightness(.65) saturate(.4) hue-rotate(185deg); }
   .leaflet-control-zoom a { background: var(--bg-panel) !important; color: var(--grey-mid) !important; border: 1px solid var(--border) !important; }
@@ -240,399 +211,103 @@
   .leaflet-control-attribution { display: none !important; }
   * { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
-  /* Chirp panel */
-.chirp-panel {
-  position: fixed;
-  bottom: 0;
-  left: 360px;
-  right: 310px;
-  background: var(--bg-panel);
-  border-top: 1px solid var(--border);
-  border-left: 1px solid var(--border);
-  border-right: 1px solid var(--border);
-  border-radius: 10px 10px 0 0;
-  overflow: hidden;
-  z-index: 500;
-  transition: all 0.3s ease;
-}
-
-.chirp-panel.active {
-  border-color: var(--amber);
-  box-shadow: 0 0 20px rgba(244,162,97,0.15);
-}
-
-.chirp-panel.detected {
-  border-color: var(--green);
-  box-shadow: 0 0 25px rgba(46,196,182,0.25);
-  animation: chirpFlash 0.5s ease-out;
-}
-
-@keyframes chirpFlash {
-  0%   { box-shadow: 0 0 40px rgba(46,196,182,0.6); }
-  100% { box-shadow: 0 0 25px rgba(46,196,182,0.25); }
-}
-
-.chirp-header {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.chirp-title {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--grey-mid);
-  font-family: var(--font-mono);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.chirp-body {
-  padding: 10px 16px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-/* Waveform visualiser */
-.waveform {
-  height: 40px;
-  width: 140px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1px;
-  padding: 4px;
-  flex-shrink: 0;
-}
-
-.wave-bar {
-  width: 3px;
-  background: var(--grey);
-  border-radius: 2px;
-  transition: height 0.1s ease;
-  min-height: 3px;
-}
-
-.waveform.listening .wave-bar {
-  background: var(--amber);
-  animation: waveAnim 1s infinite ease-in-out;
-}
-
-.waveform.detected .wave-bar {
-  background: var(--green);
-}
-
-@keyframes waveAnim {
-  0%, 100% { transform: scaleY(0.3); }
-  50%       { transform: scaleY(1.0); }
-}
-
-/* Frequency bands */
-.freq-bands {
-  display: flex;
-  gap: 6px;
-  flex-shrink: 0;
-  align-items: center;
-}
-
-.freq-band {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 5px 10px;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.freq-band.active {
-  border-color: var(--green);
-  background: var(--green-dim);
-}
-
-.freq-label {
-  font-size: 9px;
-  font-family: var(--font-mono);
-  color: var(--grey-mid);
-}
-
-.freq-value {
-  font-size: 11px;
-  font-weight: 700;
-  font-family: var(--font-mono);
-  color: var(--white);
-  margin-top: 2px;
-}
-
-.freq-band.active .freq-label,
-.freq-band.active .freq-value {
-  color: var(--green);
-}
-
-/* Detection log */
-.chirp-log {
-  flex: 1;
-  overflow-y: hidden;
-  font-family: var(--font-mono);
-  font-size: 9px;
-  color: var(--grey-mid);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.chirp-log-item {
-  padding: 2px 0;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  gap: 8px;
-}
-
-.chirp-log-item:last-child { border-bottom: none; }
-
-.chirp-log-time { color: var(--grey); flex-shrink: 0; }
-
-/* Chirp toggle button */
-.chirp-toggle {
-  width: 100%;
-  padding: 7px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 600;
-  font-family: var(--font-mono);
-  cursor: pointer;
-  border: 1px solid;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.15s;
-  margin-top: 8px;
-}
-
-.chirp-toggle.start-btn {
-  background: var(--amber-dim);
-  border-color: var(--amber);
-  color: var(--amber);
-}
-
-.chirp-toggle.stop-btn {
-  background: var(--red-dim);
-  border-color: var(--red);
-  color: var(--red);
-}
-
-.chirp-toggle svg { width: 12px; height: 12px; stroke: currentColor; }
-
-/* Detection count badge */
-.chirp-count {
-  background: var(--green-dim);
-  border: 1px solid var(--green);
-  border-radius: 10px;
-  padding: 2px 8px;
-  font-size: 9px;
-  font-family: var(--font-mono);
-  color: var(--green);
-}
-
-  /* ── Sidebar ─────────────────────────────────────────────── */
-  .sidebar-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-    z-index: 2000; opacity: 0; pointer-events: none;
-    transition: opacity .25s;
+  /* ── Chirp panel ─────────────────────────────────────────── */
+  .chirp-panel {
+    position: fixed; bottom: 0; left: 360px; right: 310px;
+    background: var(--bg-panel); border-top: 1px solid var(--border);
+    border-left: 1px solid var(--border); border-right: 1px solid var(--border);
+    border-radius: 10px 10px 0 0; overflow: hidden; z-index: 500;
+    transition: all 0.3s ease;
   }
+  .chirp-panel.active  { border-color: var(--amber); box-shadow: 0 0 20px rgba(244,162,97,0.15); }
+  .chirp-panel.detected { border-color: var(--green); box-shadow: 0 0 25px rgba(46,196,182,0.25); animation: chirpFlash 0.5s ease-out; }
+  @keyframes chirpFlash { 0%{box-shadow:0 0 40px rgba(46,196,182,0.6)} 100%{box-shadow:0 0 25px rgba(46,196,182,0.25)} }
+  .chirp-header { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .chirp-title { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--grey-mid); font-family: var(--font-mono); display: flex; align-items: center; gap: 6px; }
+  .chirp-body { padding: 10px 16px; display: flex; align-items: center; gap: 16px; }
+  .waveform { height: 40px; width: 140px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; gap: 1px; padding: 4px; flex-shrink: 0; }
+  .wave-bar { width: 3px; background: var(--grey); border-radius: 2px; transition: height 0.1s ease; min-height: 3px; }
+  .waveform.listening .wave-bar { background: var(--amber); animation: waveAnim 1s infinite ease-in-out; }
+  .waveform.detected  .wave-bar { background: var(--green); }
+  @keyframes waveAnim { 0%,100%{transform:scaleY(0.3)} 50%{transform:scaleY(1.0)} }
+  .chirp-log { flex: 1; overflow-y: hidden; font-family: var(--font-mono); font-size: 9px; color: var(--grey-mid); display: flex; flex-direction: column; justify-content: center; }
+  .chirp-log-item { padding: 2px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .chirp-log-item:last-child { border-bottom: none; }
+  .chirp-log-time { color: var(--grey); flex-shrink: 0; }
+  .chirp-count { background: var(--green-dim); border: 1px solid var(--green); border-radius: 10px; padding: 2px 8px; font-size: 9px; font-family: var(--font-mono); color: var(--green); }
+
+  /* ── Chirp acoustic range note in detail panel ───────────── */
+  .chirp-range-note {
+    background: var(--amber-dim); border: 1px solid rgba(244,162,97,0.3);
+    border-radius: 6px; padding: 10px 12px; margin-top: 8px;
+    font-size: 10px; font-family: var(--font-mono); color: var(--amber);
+    line-height: 1.6;
+  }
+  .chirp-range-note strong { color: var(--white); }
+
+  /* ── Sidebar ──────────────────────────────────────────────── */
+  .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity .25s; }
   .sidebar-overlay.open { opacity: 1; pointer-events: all; }
-
-  .sidebar {
-    position: fixed; top: 0; right: 0; height: 100vh;
-    width: 480px; background: var(--bg-panel);
-    border-left: 1px solid var(--border-hi);
-    z-index: 2001; display: flex; flex-direction: column;
-    transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1);
-    box-shadow: -8px 0 40px rgba(0,0,0,0.5);
-  }
+  .sidebar { position: fixed; top: 0; right: 0; height: 100vh; width: 480px; background: var(--bg-panel); border-left: 1px solid var(--border-hi); z-index: 2001; display: flex; flex-direction: column; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -8px 0 40px rgba(0,0,0,0.5); }
   .sidebar.open { transform: translateX(0); }
-
-  .sidebar-header {
-    padding: 16px 20px; border-bottom: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    flex-shrink: 0; background: var(--bg-card);
-  }
-  .sidebar-title {
-    font-size: 13px; font-weight: 700; letter-spacing: .08em;
-    text-transform: uppercase; color: var(--white);
-    display: flex; align-items: center; gap: 8px;
-  }
-  .sidebar-close {
-    background: none; border: 1px solid var(--border);
-    color: var(--grey-mid); cursor: pointer; border-radius: 6px;
-    padding: 4px 10px; font-family: var(--font-mono); font-size: 12px;
-    transition: all .15s;
-  }
+  .sidebar-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: var(--bg-card); }
+  .sidebar-title { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--white); display: flex; align-items: center; gap: 8px; }
+  .sidebar-close { background: none; border: 1px solid var(--border); color: var(--grey-mid); cursor: pointer; border-radius: 6px; padding: 4px 10px; font-family: var(--font-mono); font-size: 12px; transition: all .15s; }
   .sidebar-close:hover { border-color: var(--red); color: var(--red); }
-
-  /* Tabs */
-  .sb-tabs {
-    display: flex; border-bottom: 1px solid var(--border);
-    flex-shrink: 0; background: var(--bg-panel);
-  }
-  .sb-tab {
-    flex: 1; padding: 11px 8px; text-align: center;
-    font-size: 11px; font-weight: 600; font-family: var(--font-mono);
-    color: var(--grey-mid); cursor: pointer; border: none;
-    background: none; border-bottom: 2px solid transparent;
-    transition: all .15s; letter-spacing: .05em;
-    text-transform: uppercase;
-  }
+  .sb-tabs { display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; background: var(--bg-panel); }
+  .sb-tab { flex: 1; padding: 11px 8px; text-align: center; font-size: 11px; font-weight: 600; font-family: var(--font-mono); color: var(--grey-mid); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; transition: all .15s; letter-spacing: .05em; text-transform: uppercase; }
   .sb-tab:hover { color: var(--white); background: var(--bg-hover); }
   .sb-tab.active { color: var(--blue); border-bottom-color: var(--blue); background: var(--blue-dim); }
   .sb-tab.active.green-tab { color: var(--green); border-bottom-color: var(--green); background: var(--green-dim); }
   .sb-tab.active.amber-tab { color: var(--amber); border-bottom-color: var(--amber); background: var(--amber-dim); }
-
-  /* Tab panels */
   .sb-panel { display: none; flex: 1; overflow-y: auto; padding: 14px; flex-direction: column; }
   .sb-panel.active { display: flex; }
   .sb-panel::-webkit-scrollbar { width: 3px; }
   .sb-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-  /* Section label */
-  .sb-section-label {
-    font-size: 9px; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: var(--grey-mid);
-    font-family: var(--font-mono); margin-bottom: 8px; margin-top: 4px;
-  }
-
-  /* Resolved case card */
-  .sb-case {
-    background: var(--bg-card); border: 1px solid var(--border);
-    border-radius: 10px; padding: 12px 14px; margin-bottom: 8px;
-    transition: border-color .15s;
-  }
+  .sb-section-label { font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--grey-mid); font-family: var(--font-mono); margin-bottom: 8px; margin-top: 4px; }
+  .sb-case { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; transition: border-color .15s; }
   .sb-case:hover { border-color: var(--border-hi); }
-  .sb-case.resolved-case { border-left: 3px solid var(--green); }
-  .sb-case.dispatched-case { border-left: 3px solid var(--amber); }
-
-  .sb-case-top {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 8px;
-  }
-  .sb-case-id {
-    font-family: var(--font-mono); font-size: 10px;
-    color: var(--grey-mid);
-  }
-  .sb-case-badge {
-    font-size: 9px; font-weight: 700; font-family: var(--font-mono);
-    padding: 2px 8px; border-radius: 10px; border: 1px solid;
-    text-transform: uppercase; letter-spacing: .06em;
-  }
+  .sb-case.resolved-case  { border-left: 3px solid var(--green); }
+  .sb-case.dispatched-case{ border-left: 3px solid var(--amber); }
+  .sb-case-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .sb-case-id { font-family: var(--font-mono); font-size: 10px; color: var(--grey-mid); }
+  .sb-case-badge { font-size: 9px; font-weight: 700; font-family: var(--font-mono); padding: 2px 8px; border-radius: 10px; border: 1px solid; text-transform: uppercase; letter-spacing: .06em; }
   .badge-resolved-full { color: var(--green); border-color: var(--green); background: var(--green-dim); }
   .badge-dispatched { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
-
-  .sb-case-sound {
-    font-size: 13px; font-weight: 600; color: var(--white);
-    margin-bottom: 6px;
-  }
-  .sb-case-meta {
-    display: flex; gap: 12px; flex-wrap: wrap;
-  }
-  .sb-case-meta span {
-    font-size: 10px; color: var(--grey-mid);
-    font-family: var(--font-mono);
-    display: flex; align-items: center; gap: 4px;
-  }
+  .sb-case-sound { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .sb-case-meta { display: flex; gap: 12px; flex-wrap: wrap; }
+  .sb-case-meta span { font-size: 10px; color: var(--grey-mid); font-family: var(--font-mono); display: flex; align-items: center; gap: 4px; }
   .sb-case-meta span.conf-high { color: var(--red); }
   .sb-case-meta span.conf-med  { color: var(--amber); }
   .sb-case-meta span.conf-low  { color: var(--blue); }
-
-  .sb-case-team {
-    margin-top: 8px; padding: 6px 10px;
-    background: var(--amber-dim); border-radius: 6px;
-    border: 1px solid rgba(244,162,97,0.25);
-    font-size: 10px; font-family: var(--font-mono);
-    color: var(--amber); display: flex; align-items: center; gap: 6px;
-  }
-
-  /* Log entry */
-  .sb-log-entry {
-    display: flex; gap: 10px; padding: 9px 0;
-    border-bottom: 1px solid var(--border);
-    align-items: flex-start;
-  }
+  .sb-case-team { margin-top: 8px; padding: 6px 10px; background: var(--amber-dim); border-radius: 6px; border: 1px solid rgba(244,162,97,0.25); font-size: 10px; font-family: var(--font-mono); color: var(--amber); display: flex; align-items: center; gap: 6px; }
+  .sb-log-entry { display: flex; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); align-items: flex-start; }
   .sb-log-entry:last-child { border-bottom: none; }
-  .sb-log-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    flex-shrink: 0; margin-top: 4px;
-  }
-  .sb-log-dot.red    { background: var(--red); }
-  .sb-log-dot.green  { background: var(--green); }
-  .sb-log-dot.amber  { background: var(--amber); }
-  .sb-log-dot.blue   { background: var(--blue); }
-  .sb-log-dot.grey   { background: var(--grey); }
-  .sb-log-time {
-    font-size: 10px; font-family: var(--font-mono);
-    color: var(--grey-mid); flex-shrink: 0; min-width: 58px;
-  }
-  .sb-log-text {
-    font-size: 11px; color: var(--white); line-height: 1.5;
-  }
-  .sb-log-text strong { color: var(--white); }
-
-  /* Empty state */
-  .sb-empty {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    padding: 40px 20px; color: var(--grey-mid); text-align: center;
-  }
-  .sb-empty-icon { font-size: 32px; margin-bottom: 12px; opacity: .4; }
+  .sb-log-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .sb-log-dot.red   { background: var(--red); }
+  .sb-log-dot.green { background: var(--green); }
+  .sb-log-dot.amber { background: var(--amber); }
+  .sb-log-dot.blue  { background: var(--blue); }
+  .sb-log-dot.grey  { background: var(--grey); }
+  .sb-log-time { font-size: 10px; font-family: var(--font-mono); color: var(--grey-mid); flex-shrink: 0; min-width: 58px; }
+  .sb-log-text { font-size: 11px; color: var(--white); line-height: 1.5; }
+  .sb-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; color: var(--grey-mid); text-align: center; }
+  .sb-empty-icon  { font-size: 32px; margin-bottom: 12px; opacity: .4; }
   .sb-empty-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--grey); }
-  .sb-empty-sub { font-size: 11px; font-family: var(--font-mono); }
-
-  /* Sidebar trigger button in header */
-  .sb-trigger {
-    background: var(--bg-card); border: 1px solid var(--border);
-    color: var(--grey-mid); cursor: pointer; border-radius: 6px;
-    padding: 6px 12px; font-family: var(--font-mono); font-size: 11px;
-    display: flex; align-items: center; gap: 6px;
-    transition: all .15s; font-weight: 600;
-  }
+  .sb-empty-sub   { font-size: 11px; font-family: var(--font-mono); }
+  .sb-trigger { background: var(--bg-card); border: 1px solid var(--border); color: var(--grey-mid); cursor: pointer; border-radius: 6px; padding: 6px 12px; font-family: var(--font-mono); font-size: 11px; display: flex; align-items: center; gap: 6px; transition: all .15s; font-weight: 600; }
   .sb-trigger:hover { border-color: var(--blue); color: var(--blue); }
-  .sb-trigger .sb-badge-count {
-    background: var(--red); color: white; border-radius: 10px;
-    padding: 1px 6px; font-size: 9px; font-weight: 700;
-    min-width: 16px; text-align: center; display: none;
-  }
+  .sb-trigger .sb-badge-count { background: var(--red); color: white; border-radius: 10px; padding: 1px 6px; font-size: 9px; font-weight: 700; min-width: 16px; text-align: center; display: none; }
   .sb-trigger .sb-badge-count.visible { display: inline-block; }
-
-  /* Stats chips in sidebar header */
-  .sb-chips {
-    display: flex; gap: 8px; padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0; flex-wrap: wrap;
-  }
-  .sb-chip {
-    font-size: 10px; font-family: var(--font-mono);
-    font-weight: 600; padding: 3px 10px; border-radius: 12px;
-    border: 1px solid; display: flex; align-items: center; gap: 5px;
-  }
+  .sb-chips { display: flex; gap: 8px; padding: 10px 20px; border-bottom: 1px solid var(--border); flex-shrink: 0; flex-wrap: wrap; }
+  .sb-chip { font-size: 10px; font-family: var(--font-mono); font-weight: 600; padding: 3px 10px; border-radius: 12px; border: 1px solid; display: flex; align-items: center; gap: 5px; }
   .sb-chip.green { color: var(--green); border-color: var(--green); background: var(--green-dim); }
   .sb-chip.amber { color: var(--amber); border-color: var(--amber); background: var(--amber-dim); }
   .sb-chip.blue  { color: var(--blue);  border-color: var(--blue);  background: var(--blue-dim); }
-
 </style>
 </head>
 <body>
 
-<!-- Header -->
 <header class="header">
   <div class="header-left">
     <div class="logo-mark">
@@ -661,7 +336,6 @@
   </div>
 </header>
 
-<!-- Stats bar -->
 <div class="stats-bar">
   <div class="stat-cell">
     <div class="stat-label">Total Alerts</div>
@@ -690,7 +364,6 @@
   </div>
 </div>
 
-<!-- Main -->
 <div class="main">
 
   <!-- LEFT: Alert queue -->
@@ -714,7 +387,7 @@
           </svg>
         </div>
         <div class="empty-title">No alerts yet</div>
-        <div class="empty-sub">Alerts appear here automatically when ResQNet detects distress</div>
+        <div class="empty-sub">Distress alerts and acoustic beacons appear here automatically</div>
       </div>
     </div>
   </div>
@@ -770,25 +443,22 @@
 
     <div id="detail-content" style="display:none;flex:1;overflow-y:auto;flex-direction:column;">
       <div class="detail-section">
-        <div class="detail-label">Detection</div>
+        <div class="detail-label" id="d-detection-label">Detection</div>
         <div class="detail-grid">
-          <div class="detail-field"><div class="detail-field-label">Sound Type</div><div class="detail-field-value" id="d-sound">—</div></div>
-          <div class="detail-field"><div class="detail-field-label">Confidence</div><div class="detail-field-value red" id="d-conf">—</div></div>
+          <div class="detail-field"><div class="detail-field-label" id="d-sound-label">Sound Type</div><div class="detail-field-value" id="d-sound">—</div></div>
+          <div class="detail-field"><div class="detail-field-label" id="d-conf-label">Confidence</div><div class="detail-field-value red" id="d-conf">—</div></div>
           <div class="detail-field"><div class="detail-field-label">Status</div><div class="detail-field-value amber" id="d-status">—</div></div>
-          <div class="detail-field"><div class="detail-field-label">Battery</div><div class="detail-field-value" id="d-battery">—</div></div>
+          <div class="detail-field"><div class="detail-field-label" id="d-battery-label">Battery</div><div class="detail-field-value" id="d-battery">—</div></div>
         </div>
       </div>
 
-      <div class="detail-section">
+      <div class="detail-section" id="d-location-section">
         <div class="detail-label">Location</div>
         <div class="detail-grid">
           <div class="detail-field"><div class="detail-field-label">Latitude</div><div class="detail-field-value green" id="d-lat">—</div></div>
           <div class="detail-field"><div class="detail-field-label">Longitude</div><div class="detail-field-value green" id="d-lng">—</div></div>
         </div>
-        <a id="d-maps" href="#" target="_blank" style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--font-mono);color:var(--blue);text-decoration:none;padding:7px 10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-top:8px;">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-          Open in Google Maps
-        </a>
+        <div id="d-location-extra" style="margin-top:8px;"></div>
       </div>
 
       <div class="detail-section">
@@ -796,13 +466,13 @@
         <div style="font-family:var(--font-mono);font-size:11px;color:var(--grey-mid);" id="d-time">—</div>
       </div>
 
-      <div class="detail-section">
-        <div class="detail-label">CNN Confidence</div>
+      <div class="detail-section" id="d-bar-section">
+        <div class="detail-label" id="d-bar-label">CNN Confidence</div>
         <div style="display:flex;align-items:center;gap:9px;margin-top:4px;">
           <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
             <div id="d-bar" style="height:100%;background:var(--red);border-radius:3px;width:0%;transition:width .5s;"></div>
           </div>
-          <span id="d-pct" style="font-family:var(--font-mono);font-size:11px;color:var(--red);width:34px;text-align:right;">0%</span>
+          <span id="d-pct" style="font-family:var(--font-mono);font-size:11px;color:var(--red);width:50px;text-align:right;">0%</span>
         </div>
       </div>
     </div>
@@ -822,7 +492,6 @@
       </button>
     </div>
 
-    <!-- Activity feed -->
     <div class="panel-header" style="border-top:1px solid var(--border);">
       <div class="panel-title">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
@@ -848,6 +517,7 @@
   </div>
 </div>
 
+<!-- Chirp panel -->
 <div class="chirp-panel" id="chirp-panel">
   <div class="chirp-header">
     <div class="chirp-title">
@@ -860,37 +530,62 @@
     </div>
     <div style="display:flex;align-items:center;gap:8px;">
       <span class="chirp-count" id="chirp-count">0 detected</span>
-      <button onclick="toggleChirpPanel()" id="chirp-collapse-btn"
-        style="background:none;border:1px solid var(--border);border-radius:4px;
-               color:var(--grey-mid);cursor:pointer;font-size:10px;padding:2px 6px;
-               font-family:var(--font-mono);">▼</button>
     </div>
   </div>
-
   <div class="chirp-body" id="chirp-body-content">
-    <!-- Waveform animation bar -->
-    <div class="waveform" id="chirp-waveform">
-      <!-- bars generated by JS -->
-    </div>
-
-    <!-- Status + log text -->
+    <div class="waveform" id="chirp-waveform"></div>
     <div style="display:flex;flex-direction:column;justify-content:center;gap:3px;flex:1;min-width:0;">
-      <div id="chirp-status" style="font-size:10px;font-family:var(--font-mono);
-           color:var(--grey-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-        Detector inactive
+      <div id="chirp-status" style="font-size:10px;font-family:var(--font-mono);color:var(--grey-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+        Detector active — listening for beacon
       </div>
       <div class="chirp-log" id="chirp-log">
-        <div style="color:var(--grey);font-size:9px;font-family:var(--font-mono);">
-          No detections yet
-        </div>
+        <div style="color:var(--grey);font-size:9px;font-family:var(--font-mono);">No detections yet</div>
       </div>
     </div>
-
-    <!-- Toggle button -->
-
   </div>
 </div>
 
+<!-- Sidebar overlay -->
+<div class="sidebar-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Case History &amp; Logs
+    </div>
+    <button class="sidebar-close" onclick="closeSidebar()">✕ Close</button>
+  </div>
+  <div class="sb-chips">
+    <div class="sb-chip green">✓ <span id="sb-resolved-count">0</span> Resolved</div>
+    <div class="sb-chip amber">⟶ <span id="sb-dispatch-count">0</span> Dispatched</div>
+    <div class="sb-chip blue">≡ <span id="sb-log-count">0</span> Log entries</div>
+  </div>
+  <div class="sb-tabs">
+    <button class="sb-tab active green-tab" id="tab-resolved"   onclick="switchTab('resolved')">✓ Resolved</button>
+    <button class="sb-tab amber-tab"        id="tab-dispatched" onclick="switchTab('dispatched')">⟶ Dispatched</button>
+    <button class="sb-tab"                  id="tab-log"        onclick="switchTab('log')">≡ Activity Log</button>
+  </div>
+  <div class="sb-panel active" id="sb-panel-resolved">
+    <div id="sb-resolved-list">
+      <div class="sb-empty"><div class="sb-empty-icon">✓</div><div class="sb-empty-title">No resolved cases yet</div></div>
+    </div>
+  </div>
+  <div class="sb-panel" id="sb-panel-dispatched">
+    <div id="sb-dispatched-list">
+      <div class="sb-empty"><div class="sb-empty-icon">⟶</div><div class="sb-empty-title">No dispatches yet</div></div>
+    </div>
+  </div>
+  <div class="sb-panel" id="sb-panel-log">
+    <div id="sb-log-list">
+      <div class="sb-empty"><div class="sb-empty-icon">≡</div><div class="sb-empty-title">No log entries yet</div></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── State ─────────────────────────────────────────────────────
@@ -903,20 +598,14 @@ let socket     = null;
 
 // ── Clock ─────────────────────────────────────────────────────
 setInterval(() => {
-  document.getElementById('clock').textContent =
-    new Date().toTimeString().slice(0,8);
+  document.getElementById('clock').textContent = new Date().toTimeString().slice(0,8);
 }, 1000);
 
 // ── Map ───────────────────────────────────────────────────────
 function initMap() {
-  // Default to New Zealand center
-  // Will auto-pan to first real alert received
   map = L.map('map', { zoomControl: true, attributionControl: false })
-         .setView([-36.8485, 174.7633], 10); // Auckland NZ
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-  }).addTo(map);
+         .setView([-36.8485, 174.7633], 10);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo(map);
 }
 
 function makeIcon(color, label) {
@@ -940,38 +629,28 @@ function pColor(c) {
   if (c >= 0.65) return 'amber';
   return 'blue';
 }
-
 function badge(c, isResolved) {
   if (isResolved) return ['RESOLVED','badge-resolved'];
   if (c >= 0.85)  return ['CRITICAL','badge-critical'];
   if (c >= 0.65)  return ['HIGH',    'badge-high'];
   return ['MEDIUM','badge-medium'];
 }
-
 function timeAgo(ts) {
   if (!ts) return '—';
   try {
     const d = new Date(ts.replace(' ', 'T'));
-    if (isNaN(d.getTime())) return ts; // unparseable — show raw string rather than throw
+    if (isNaN(d.getTime())) return ts;
     let s = Math.floor((Date.now() - d) / 1000);
-
-    const CLOCK_SKEW_TOLERANCE_S = 30;
-    if (s < 0) {
-      if (s >= -CLOCK_SKEW_TOLERANCE_S) return 'just now';
-      return 'just now*';
-    }
-
+    if (s < 0) return 'just now';
     if (s < 5)     return 'just now';
     if (s < 60)    return s + 's ago';
-    if (s < 3600)  return Math.floor(s / 60) + 'm ago';
-    if (s < 86400) return Math.floor(s / 3600) + 'h ago';
-    return Math.floor(s / 86400) + 'd ago';
-  } catch {
-    return ts;
-  }
+    if (s < 3600)  return Math.floor(s/60) + 'm ago';
+    if (s < 86400) return Math.floor(s/3600) + 'h ago';
+    return Math.floor(s/86400) + 'd ago';
+  } catch { return ts; }
 }
 
-// ── Render queue ──────────────────────────────────────────────
+// ── Render queue (handles both distress and chirp cards) ──────
 function renderQueue() {
   const el = document.getElementById('alert-list');
   if (alerts.length === 0) {
@@ -981,69 +660,97 @@ function renderQueue() {
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg></div>
       <div class="empty-title">No alerts yet</div>
-      <div class="empty-sub">Alerts appear here when ResQNet detects distress</div>
+      <div class="empty-sub">Distress alerts and acoustic beacons appear here automatically</div>
     </div>`;
     return;
   }
 
-  const active   = alerts
-    .filter(a => !resolved.has(String(a.id)))
-    .sort((a, b) => Number(b.id) - Number(a.id));
-  const inactive = alerts
-    .filter(a =>  resolved.has(String(a.id)))
-    .sort((a, b) => Number(b.id) - Number(a.id));
+  const active   = alerts.filter(a => !resolved.has(String(a.id)))
+                         .sort((a,b) => Number(b.id)-Number(a.id));
+  const inactive = alerts.filter(a =>  resolved.has(String(a.id)))
+                         .sort((a,b) => Number(b.id)-Number(a.id));
   const all      = [...active, ...inactive];
 
   document.getElementById('q-count').textContent =
     active.length + ' alert' + (active.length !== 1 ? 's' : '');
 
   el.innerHTML = all.map((a, i) => {
-    const rid   = String(a.id);
-    const isRes = resolved.has(rid);
-    const color = isRes ? 'green' : pColor(a.confidence);
-    const [bl, bc] = badge(a.confidence, isRes);
-    const conf  = Math.round(a.confidence * 100);
-    const rank  = isRes ? '✓' : (active.indexOf(a) + 1);
+    const rid     = String(a.id);
+    const isRes   = resolved.has(rid);
+    const isChirp = !!a.isChirp;
+    const color   = isRes ? 'green' : isChirp ? 'amber' : pColor(a.confidence);
+    const selCls  = String(selectedId) === rid ? 'selected ' + color : '';
+    const rank    = isRes ? '✓' : (active.indexOf(a) + 1);
     const rankCls = i===0?'p1':i===1?'p2':'p3';
-    const selCls  = String(selectedId) === rid ? 'selected '+color : '';
+    const altPrefix = isChirp ? 'CHR-' : 'ALT-';
 
-    return `<div class="alert-card ${color} ${selCls}" id="card-${rid}"
-                 onclick="selectAlert('${rid}')">
-      <div class="alert-top">
-        <div style="display:flex;align-items:center;gap:7px;">
-          <span class="alert-rank ${isRes?'':rankCls}">${rank}</span>
-          <div>
-            <div class="alert-id">ALT-${rid.slice(-4)}</div>
-            <div class="alert-sound">${a.sound_type||'Unknown'}</div>
-          </div>
-        </div>
-        <span class="badge ${bc}">${bl}</span>
-      </div>
-      <div class="alert-meta">
+    let badgeHtml, metaHtml, barHtml;
+
+    if (isChirp) {
+      const bl = isRes ? 'RESOLVED' : 'ACOUSTIC';
+      const bc = isRes ? 'badge-resolved' : 'badge-chirp';
+      badgeHtml = `<span class="badge ${bc}">${bl}</span>`;
+      metaHtml  = `
         <span class="meta-item">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/>
-            <circle cx="12" cy="10" r="3"/>
+            <path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>
+          </svg>
+          Victim in acoustic range
+        </span>
+        <span class="meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          ${timeAgo(a.timestamp)}
+        </span>`;
+      barHtml = `
+        <div style="margin-top:8px;display:flex;align-items:center;gap:7px;">
+          <span style="font-size:9px;font-family:var(--font-mono);color:var(--grey-mid);">
+            ${a.sequence_elapsed_s ? 'sweep ' + a.sequence_elapsed_s.toFixed(2) + 's' : 'beacon'}
+          </span>
+          <div style="flex:1;height:3px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div style="width:100%;height:100%;background:var(--amber);border-radius:2px;"></div>
+          </div>
+          <span style="font-size:9px;font-family:var(--font-mono);color:var(--amber);">CONFIRMED</span>
+        </div>`;
+    } else {
+      const conf = Math.round(a.confidence * 100);
+      const [bl, bc] = badge(a.confidence, isRes);
+      badgeHtml = `<span class="badge ${bc}">${bl}</span>`;
+      metaHtml  = `
+        <span class="meta-item">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
           </svg>
           ${a.latitude ? a.latitude.toFixed(4)+'°, '+a.longitude.toFixed(4)+'°' : 'No GPS'}
         </span>
         <span class="meta-item">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <polyline points="12 6 12 12 16 14"/>
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
           </svg>
           ${timeAgo(a.timestamp)}
-        </span>
+        </span>`;
+      barHtml = `<div class="conf-bar"><div class="conf-fill ${color}" style="width:${conf}%"></div></div>`;
+    }
+
+    return `<div class="alert-card ${color} ${selCls}" id="card-${rid}" onclick="selectAlert('${rid}')">
+      <div class="alert-top">
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span class="alert-rank ${isRes?'':rankCls}">${rank}</span>
+          <div>
+            <div class="alert-id">${altPrefix}${rid.slice(-4)}</div>
+            <div class="alert-sound">${a.sound_type || 'Unknown'}</div>
+          </div>
+        </div>
+        ${badgeHtml}
       </div>
-      <div class="conf-bar">
-        <div class="conf-fill ${color}" style="width:${conf}%"></div>
-      </div>
+      <div class="alert-meta">${metaHtml}</div>
+      ${barHtml}
     </div>`;
   }).join('');
 }
 
-
-// ── Select alert ──────────────────────────────────────────────
+// ── Select alert — handles both distress and chirp ────────────
 function selectAlert(id) {
   id = String(id);
   selectedId = id;
@@ -1056,87 +763,150 @@ function selectAlert(id) {
   document.getElementById('detail-content').style.display = 'flex';
   document.getElementById('action-row').style.display     = 'flex';
 
-  const conf    = Math.round(a.confidence * 100);
-  const isRes   = resolved.has(id);
-  const soundType = a.sound_type || 'Unknown';
+  const isRes = resolved.has(id);
 
-  document.getElementById('d-sound').textContent   = soundType;
-  document.getElementById('d-conf').textContent    = conf + '%';
-  document.getElementById('d-status').textContent  = isRes ? 'Resolved' : 'Active';
-  document.getElementById('d-status').className    = 'detail-field-value ' + (isRes ? 'green' : 'amber');
-  document.getElementById('d-battery').textContent = (a.battery || 0) + '%';
-  document.getElementById('d-lat').textContent     = a.latitude  ? a.latitude.toFixed(6)  : 'N/A';
-  document.getElementById('d-lng').textContent     = a.longitude ? a.longitude.toFixed(6) : 'N/A';
-  document.getElementById('d-time').textContent    = a.timestamp || '—';
-  document.getElementById('d-bar').style.width     = conf + '%';
-  document.getElementById('d-pct').textContent     = conf + '%';
-  document.getElementById('d-maps').href           = a.latitude
-  ? `https://www.google.com/maps?q=${a.latitude},${a.longitude}` : '#';
+  if (a.isChirp) {
+    // ── Chirp alert detail ────────────────────────────────────
+    document.getElementById('d-detection-label').textContent = 'Acoustic Detection';
+    document.getElementById('d-sound-label').textContent     = 'Beacon Type';
+    document.getElementById('d-conf-label').textContent      = 'Detection';
+    document.getElementById('d-battery-label').textContent   = 'Sweep Time';
+    document.getElementById('d-bar-label').textContent       = 'Sweep Quality';
 
-  if (markers[id] && map) {
-    map.setView(markers[id].getLatLng(), 14);
-    markers[id].openPopup();
+    document.getElementById('d-sound').textContent  = 'Chirp Beacon';
+    document.getElementById('d-sound').className    = 'detail-field-value amber';
+    document.getElementById('d-conf').textContent   = 'Confirmed';
+    document.getElementById('d-conf').className     = 'detail-field-value green';
+    document.getElementById('d-status').textContent = isRes ? 'Resolved' : 'Active';
+    document.getElementById('d-status').className   = 'detail-field-value ' + (isRes ? 'green' : 'amber');
+    document.getElementById('d-battery').textContent = a.sequence_elapsed_s
+      ? a.sequence_elapsed_s.toFixed(3) + 's' : '—';
+
+    // Location section — acoustic range note, no GPS
+    document.getElementById('d-lat').textContent  = 'No GPS';
+    document.getElementById('d-lat').className    = 'detail-field-value amber';
+    document.getElementById('d-lng').textContent  = 'Acoustic only';
+    document.getElementById('d-lng').className    = 'detail-field-value amber';
+
+    document.getElementById('d-location-extra').innerHTML = `
+      <div class="chirp-range-note">
+        <strong>🔊 Victim within acoustic range</strong><br>
+        The 2–4 kHz chirp beacon was detected by the rescue coordinator's microphone.
+        The victim is approximately <strong>within 10m</strong> of this device.
+        Begin a physical search of the immediate area.
+      </div>`;
+
+    // Bar shows sweep quality
+    const elapsedPct = a.sequence_elapsed_s
+      ? Math.min(100, Math.round((a.sequence_elapsed_s / 0.9) * 100)) : 100;
+    document.getElementById('d-bar').style.width      = elapsedPct + '%';
+    document.getElementById('d-bar').style.background = 'var(--amber)';
+    document.getElementById('d-pct').textContent      = a.sequence_elapsed_s
+      ? a.sequence_elapsed_s.toFixed(2) + 's' : 'OK';
+    document.getElementById('d-pct').style.color      = 'var(--amber)';
+    document.getElementById('d-pct').style.width      = '50px';
+
+    document.getElementById('d-time').textContent = a.timestamp || '—';
+
+  } else {
+    // ── Standard distress alert detail ────────────────────────
+    const conf = Math.round(a.confidence * 100);
+
+    document.getElementById('d-detection-label').textContent = 'Detection';
+    document.getElementById('d-sound-label').textContent     = 'Sound Type';
+    document.getElementById('d-conf-label').textContent      = 'Confidence';
+    document.getElementById('d-battery-label').textContent   = 'Battery';
+    document.getElementById('d-bar-label').textContent       = 'CNN Confidence';
+
+    document.getElementById('d-sound').textContent   = a.sound_type || 'Unknown';
+    document.getElementById('d-sound').className     = 'detail-field-value';
+    document.getElementById('d-conf').textContent    = conf + '%';
+    document.getElementById('d-conf').className      = 'detail-field-value red';
+    document.getElementById('d-status').textContent  = isRes ? 'Resolved' : 'Active';
+    document.getElementById('d-status').className    = 'detail-field-value ' + (isRes ? 'green' : 'amber');
+    document.getElementById('d-battery').textContent = (a.battery || 0) + '%';
+
+    document.getElementById('d-lat').textContent  = a.latitude  ? a.latitude.toFixed(6)  : 'N/A';
+    document.getElementById('d-lat').className    = 'detail-field-value green';
+    document.getElementById('d-lng').textContent  = a.longitude ? a.longitude.toFixed(6) : 'N/A';
+    document.getElementById('d-lng').className    = 'detail-field-value green';
+
+    document.getElementById('d-location-extra').innerHTML = a.latitude
+      ? `<a href="https://www.google.com/maps?q=${a.latitude},${a.longitude}" target="_blank"
+           style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--font-mono);
+                  color:var(--blue);text-decoration:none;padding:7px 10px;background:var(--bg-card);
+                  border:1px solid var(--border);border-radius:6px;">
+           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+           </svg>Open in Google Maps</a>`
+      : `<div style="font-size:11px;font-family:var(--font-mono);color:var(--grey-mid);padding:6px 0;">
+           📍 No GPS coordinates received</div>`;
+
+    document.getElementById('d-bar').style.width      = conf + '%';
+    document.getElementById('d-bar').style.background = 'var(--red)';
+    document.getElementById('d-pct').textContent      = conf + '%';
+    document.getElementById('d-pct').style.color      = 'var(--red)';
+    document.getElementById('d-pct').style.width      = '34px';
+    document.getElementById('d-time').textContent     = a.timestamp || '—';
+
+    if (markers[id] && map) {
+      map.setView(markers[id].getLatLng(), 14);
+      markers[id].openPopup();
+    }
   }
 }
 
-// ── Add marker ────────────────────────────────────────────────
+// ── Add marker (distress alerts only — chirp has no GPS) ──────
 function addMarker(a, rank) {
+  if (a.isChirp) return;  // no GPS coordinates to plot
   if (!a.latitude || !a.longitude || !map) return;
   const rid   = String(a.id);
   const color = resolved.has(rid) ? 'green' : pColor(a.confidence);
   const icon  = makeIcon(color, rank);
-  const sound = a.sound_type || 'Unknown';
   const conf  = Math.round(a.confidence * 100);
-
   if (markers[rid]) map.removeLayer(markers[rid]);
-
   const m = L.marker([a.latitude, a.longitude], { icon })
     .bindPopup(`<div style="background:var(--bg-panel);border:1px solid var(--border);
                 border-radius:8px;padding:11px;font-family:var(--font-ui);min-width:160px;">
       <div style="font-size:9px;font-family:var(--font-mono);color:var(--grey-mid);">ALT-${rid.slice(-4)}</div>
-      <div style="font-size:13px;font-weight:600;color:var(--white);margin:3px 0 6px;">${sound}</div>
+      <div style="font-size:13px;font-weight:600;color:var(--white);margin:3px 0 6px;">${a.sound_type||'Unknown'}</div>
       <div style="font-size:10px;color:var(--grey-mid);font-family:var(--font-mono);">CNN: ${conf}%</div>
       <div style="font-size:10px;color:var(--grey-mid);font-family:var(--font-mono);">${a.timestamp||''}</div>
     </div>`)
     .addTo(map)
     .on('click', () => selectAlert(rid));
-
   markers[rid] = m;
 }
 
-// ── Fit all markers ───────────────────────────────────────────
 function fitAll() {
   const pts = Object.values(markers).map(m => m.getLatLng());
-  if (pts.length === 0) return;
+  if (!pts.length) return;
   if (pts.length === 1) { map.setView(pts[0], 14); return; }
-  map.fitBounds(L.latLngBounds(pts), { padding: [40,40] });
+  map.fitBounds(L.latLngBounds(pts), { padding:[40,40] });
 }
 
-// ── Auto-pan map to first real alert ─────────────────────────
 function autoPanToAlert(a) {
+  if (a.isChirp) return;  // no GPS — don't pan
   if (!a.latitude || !a.longitude) return;
-  // Only auto-pan if map is still showing default view
-  if (map.getZoom() <= 11) {
-    map.setView([a.latitude, a.longitude], 13);
-  }
+  if (map.getZoom() <= 11) map.setView([a.latitude, a.longitude], 13);
 }
 
 // ── Stats ─────────────────────────────────────────────────────
 function updateStats() {
-  const total    = alerts.length;
-  const critical = alerts.filter(a => a.confidence >= 0.85 && !resolved.has(String(a.id))).length;
+  const realAlerts = alerts.filter(a => !a.isChirp);
+  const total    = realAlerts.length;
+  const critical = realAlerts.filter(a => a.confidence >= 0.85 && !resolved.has(String(a.id))).length;
   const active   = alerts.filter(a => !resolved.has(String(a.id))).length;
   const res      = resolved.size;
   const avg      = total > 0
-    ? Math.round(alerts.reduce((s,a) => s + a.confidence, 0) / total * 100) : null;
-
+    ? Math.round(realAlerts.reduce((s,a) => s + a.confidence, 0) / total * 100) : null;
   document.getElementById('s-total').textContent    = total;
   document.getElementById('s-critical').textContent = critical;
   document.getElementById('s-active').textContent   = active;
   document.getElementById('s-resolved').textContent = res;
   document.getElementById('s-avg').textContent      = avg !== null ? avg + '%' : '—';
   document.getElementById('s-total-sub').textContent =
-    total > 0 ? 'Last: ' + timeAgo(alerts[0]?.timestamp) : 'Awaiting data';
+    total > 0 ? 'Last: ' + timeAgo(realAlerts[0]?.timestamp) : 'Awaiting data';
 }
 
 // ── Activity feed ─────────────────────────────────────────────
@@ -1147,8 +917,7 @@ function log(text, color) {
   const item = document.createElement('div');
   item.className = 'feed-item';
   item.innerHTML = `<div class="feed-dot ${color||''}"></div>
-    <div><div class="feed-text">${text}</div>
-    <div class="feed-time">${time}</div></div>`;
+    <div><div class="feed-text">${text}</div><div class="feed-time">${time}</div></div>`;
   feed.insertBefore(item, feed.firstChild);
   while (feed.children.length > 25) feed.removeChild(feed.lastChild);
 }
@@ -1160,11 +929,10 @@ function toast(title, sub) {
   document.getElementById('toast-sub').textContent   = sub;
   document.getElementById('toast').classList.add('show');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() =>
-    document.getElementById('toast').classList.remove('show'), 4000);
+  toastTimer = setTimeout(() => document.getElementById('toast').classList.remove('show'), 4000);
 }
 
-// ── Add alert ─────────────────────────────────────────────────
+// ── Add alert (distress) ──────────────────────────────────────
 function addAlert(data, flash) {
   const a = {
     id:         String(data.id || Date.now()),
@@ -1174,20 +942,16 @@ function addAlert(data, flash) {
     longitude:  parseFloat(data.longitude)  || null,
     battery:    data.battery || 0,
     timestamp:  data.timestamp || new Date().toISOString().replace('T',' ').slice(0,19),
+    isChirp:    false,
   };
-
-  // Avoid duplicates on reload
   if (alerts.find(x => String(x.id) === a.id)) return;
   alerts.unshift(a);
-
-  const active = alerts.filter(x => !resolved.has(String(x.id)));
+  const active = alerts.filter(x => !resolved.has(String(x.id)) && !x.isChirp);
   const rank   = active.indexOf(a) + 1;
-
   addMarker(a, rank);
   autoPanToAlert(a);
   renderQueue();
   updateStats();
-
   if (flash) {
     const conf = Math.round(a.confidence * 100);
     log(`<strong>New alert</strong> — ${a.sound_type} at ${conf}%`,
@@ -1200,6 +964,34 @@ function addAlert(data, flash) {
   }
 }
 
+// ── Add chirp alert to queue ──────────────────────────────────
+function addChirpAlert(event) {
+  if (!event) return;
+  const a = {
+    id:                 String(event.id || Date.now()),
+    sound_type:         'Acoustic Beacon',
+    confidence:         1.0,
+    latitude:           null,
+    longitude:          null,
+    battery:            null,
+    timestamp:          event.timestamp || new Date().toISOString().replace('T',' ').slice(0,19),
+    isChirp:            true,
+    sequence_elapsed_s: event.sequence_elapsed_s || 0,
+    chirp_count:        event.count || chirpCount,
+  };
+  if (alerts.find(x => String(x.id) === a.id)) return;
+  alerts.unshift(a);
+  renderQueue();
+  updateStats();
+  const cnt = a.chirp_count;
+  log(`<strong>Acoustic chirp beacon #${cnt}</strong> — victim within ~10m`, 'amber');
+  toast('Acoustic Beacon Detected!', `Chirp #${cnt} — victim in acoustic range`);
+  setTimeout(() => {
+    const card = document.getElementById(`card-${a.id}`);
+    if (card) card.classList.add('flash');
+  }, 50);
+}
+
 // ── Actions ───────────────────────────────────────────────────
 function dispatch() {
   if (!selectedId) return;
@@ -1208,21 +1000,20 @@ function dispatch() {
   fetch(`/dispatch/${selectedId}`, { method:'POST',
     headers:{'Content-Type':'application/json'},
     body: JSON.stringify({team:'Rescue Team Alpha'}) });
-  log(`Team dispatched → ALT-${selectedId.slice(-4)} (${a.sound_type})`, 'amber');
+  const label = a.isChirp ? 'CHR' : 'ALT';
+  log(`Team dispatched → ${label}-${selectedId.slice(-4)} (${a.sound_type})`, 'amber');
   sbCaptureDispatch(selectedId, a, 'Rescue Team Alpha');
-  toast('Team Dispatched', `ALT-${selectedId.slice(-4)}`);
+  toast('Team Dispatched', `${label}-${selectedId.slice(-4)}`);
 }
 
 async function resolve() {
   if (!selectedId) return;
   resolved.add(selectedId);
   const a = alerts.find(x => String(x.id) === selectedId);
-  if (a) addMarker(a, '✓');
-  log(`ALT-${selectedId.slice(-4)} marked resolved`, 'green');
-  // Persist to server
-  try {
-    await fetch(`/resolve/${selectedId}`, { method:'POST' });
-  } catch(e) { console.warn('Could not persist resolve to server:', e); }
+  if (a && !a.isChirp) addMarker(a, '✓');
+  const label = a && a.isChirp ? 'CHR' : 'ALT';
+  log(`${label}-${selectedId.slice(-4)} marked resolved`, 'green');
+  try { await fetch(`/resolve/${selectedId}`, { method:'POST' }); } catch(e) {}
   renderQueue();
   updateStats();
   selectAlert(selectedId);
@@ -1264,14 +1055,10 @@ async function loadAlerts() {
     const res  = await fetch('/alerts');
     const data = await res.json();
     if (Array.isArray(data) && data.length > 0) {
-      // Add oldest first so newest is at top
       [...data].reverse().forEach(a => addAlert(a, false));
       log(`Loaded ${data.length} alert(s) from server`, 'blue');
-      // Pan map to most recent alert with GPS
       const withGps = data.find(a => a.latitude && a.longitude);
-      if (withGps && map) {
-        map.setView([withGps.latitude, withGps.longitude], 13);
-      }
+      if (withGps && map) map.setView([withGps.latitude, withGps.longitude], 13);
     } else {
       log('No existing alerts on server', 'blue');
     }
@@ -1281,7 +1068,6 @@ async function loadAlerts() {
 }
 
 // ── Socket.IO ─────────────────────────────────────────────────
-//  Updated Socket.IO function blocks:
 function connectSocket() {
   const el = document.getElementById('conn-status');
   try {
@@ -1289,14 +1075,16 @@ function connectSocket() {
     socket.on('connect',    () => { el.textContent='CONNECTED'; el.className='connected'; log('Connected to ResQNet server','green'); });
     socket.on('disconnect', () => { el.textContent='DISCONNECTED'; el.className='disconnected'; log('Connection lost','red'); });
     socket.on('new_alert',  (d) => addAlert(d, true));
-    
-    // Direct link to WebSocket without duplicate polling handlers
     socket.on('chirp_detected', (data) => {
-      chirpCount = data.count; // sync count
+      chirpCount = data.count;
       onChirpDetected(data);
     });
-    
-    socket.on('alerts_cleared', () => { alerts=[]; resolved.clear(); Object.values(markers).forEach(m=>map.removeLayer(m)); markers={}; renderQueue(); updateStats(); log('Alerts cleared by server','red'); });
+    socket.on('alerts_cleared', () => {
+      alerts=[]; resolved.clear();
+      Object.values(markers).forEach(m=>map.removeLayer(m));
+      markers={}; renderQueue(); updateStats();
+      log('Alerts cleared by server','red');
+    });
   } catch(e) {
     el.textContent='OFFLINE'; el.className='disconnected';
   }
@@ -1310,14 +1098,14 @@ document.addEventListener('DOMContentLoaded', () => {
   log('ResQNet Dashboard initialised', 'blue');
 });
 
+// ══════════════════════════════════════════════════════════════
+// CHIRP DETECTOR
+// ══════════════════════════════════════════════════════════════
+let chirpActive  = false;
+let chirpCount   = 0;
+let waveInterval = null;
+let chirpPollTimer = null;
 
-// ── Chirp detector state ──────────────────────────────────────
-let chirpActive     = false;
-let chirpCount      = 0;
-let waveInterval    = null;
-let chirpPollTimer  = null;
-
-// ── Build waveform bars ───────────────────────────────────────
 function buildWaveform() {
   const wf = document.getElementById('chirp-waveform');
   wf.innerHTML = '';
@@ -1329,216 +1117,87 @@ function buildWaveform() {
   }
 }
 
-// ── Animate waveform randomly (listening state) ───────────────
 function startWaveAnimation() {
   const bars = document.querySelectorAll('.wave-bar');
   waveInterval = setInterval(() => {
     bars.forEach(bar => {
-      const h = chirpActive
-        ? Math.random() * 32 + 4
-        : 4;
-      bar.style.height = h + 'px';
+      bar.style.height = (chirpActive ? Math.random()*32+4 : 4) + 'px';
     });
   }, 80);
 }
 
 function stopWaveAnimation() {
   clearInterval(waveInterval);
-  document.querySelectorAll('.wave-bar').forEach(b => {
-    b.style.height = '4px';
-  });
+  document.querySelectorAll('.wave-bar').forEach(b => b.style.height='4px');
 }
 
-// ── Toggle chirp detector ─────────────────────────────────────
-async function toggleChirpDetector() {
-  if (!chirpActive) {
-    await startChirpDetector();
-  } else {
-    await stopChirpDetector();
-  }
-}
-
-async function startChirpDetector() {
-  try {
-    const res = await fetch('/chirp/start', { method: 'POST' });
-    const data = await res.json();
-
-    if (res.ok && data.status !== 'failed') {
-      chirpActive = true;
-      updateChirpUI(true);
-      startWaveAnimation();
-      startChirpPolling();
-      document.getElementById('chirp-status').textContent =
-        'Listening for chirp beacon...';
-      addChirpLog('Detector started — listening on microphone');
-    } else {
-      document.getElementById('chirp-status').textContent =
-        'Failed: ' + (data.error || 'Unknown error');
-      addChirpLog('ERROR: ' + (data.error || 'Could not start'));
-    }
-  } catch(e) {
-    document.getElementById('chirp-status').textContent =
-      'Error: ' + e.message;
-  }
-}
-
-async function stopChirpDetector() {
-  try {
-    await fetch('/chirp/stop', { method: 'POST' });
-    chirpActive = false;
-    updateChirpUI(false);
-    stopWaveAnimation();
-    stopChirpPolling();
-    document.getElementById('chirp-status').textContent =
-      'Detector stopped';
-    // Reset frequency bands
-    // bands removed
-  } catch(e) {
-    console.error('Stop chirp error:', e);
-  }
-}
-
-function updateChirpUI(active) {
-  const panel = document.getElementById('chirp-panel');
-  const btn   = document.getElementById('chirp-btn');
-  const wf    = document.getElementById('chirp-waveform');
-
-  if (active) {
-    panel.classList.add('active');
-    wf.classList.add('listening');
-    btn.className = 'chirp-toggle stop-btn';
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-        <rect x="6" y="6" width="12" height="12" rx="2"/>
-      </svg>
-      Stop Detection`;
-  } else {
-    panel.classList.remove('active', 'detected');
-    wf.classList.remove('listening', 'detected');
-    btn.className = 'chirp-toggle start-btn';
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24" fill="none" stroke-width="2">
-        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-        <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-        <line x1="12" y1="19" x2="12" y2="23"/>
-        <line x1="8" y1="23" x2="16" y2="23"/>
-      </svg>
-      Start Chirp Detection`;
-  }
-}
-
-// ── Poll backend for chirp detections ────────────────────────
-function startChirpPolling() {
-  chirpPollTimer = setInterval(async () => {
-    try {
-      const res  = await fetch('/chirp/status');
-      const data = await res.json();
-
-      if (data.total_detections > chirpCount) {
-        const newCount = data.total_detections - chirpCount;
-        chirpCount     = data.total_detections;
-        onChirpDetected(data.history[data.history.length - 1]);
-      }
-    } catch(e) { /* ignore polling errors */ }
-  }, 500);
-}
-
-function stopChirpPolling() {
-  clearInterval(chirpPollTimer);
-}
-
-// ── Handle chirp detection event ─────────────────────────────
+// ── onChirpDetected — also creates a queue card ───────────────
 function onChirpDetected(event) {
   if (!event) return;
 
   const panel = document.getElementById('chirp-panel');
   const wf    = document.getElementById('chirp-waveform');
-
-  // Flash panel green
   panel.classList.add('detected');
   wf.classList.add('detected');
-  setTimeout(() => {
-    panel.classList.remove('detected');
-    wf.classList.remove('detected');
-  }, 2000);
+  setTimeout(() => { panel.classList.remove('detected'); wf.classList.remove('detected'); }, 2000);
 
-  // Light up all frequency bands
-  // frequency bands removed from UI - flash waveform instead
-  const wf2 = document.getElementById('chirp-waveform');
-  if (wf2) { wf2.classList.add('detected'); setTimeout(() => wf2.classList.remove('detected'), 2000); }
-
-  // Update count badge
   document.getElementById('chirp-count').textContent =
     `${chirpCount} detected`;
-
-  // Update status
   document.getElementById('chirp-status').textContent =
-    `Chirp detected at ${event.timestamp}`;
-
-  // Add to log
+    `Chirp #${chirpCount} at ${event.timestamp}`;
   addChirpLog(`CHIRP #${chirpCount} — ${event.timestamp}`);
 
-  // Show toast
-  toast('Chirp Beacon Detected!',
-    'Victim nearby — check location');
-
-  // Add to activity feed
-  log('<strong>Acoustic chirp beacon detected</strong> — '
-      + 'victim device in range', 'green');
-
-
-  console.log('Chirp detected:', event);
+  // Push into the main priority queue
+  addChirpAlert(event);
 }
 
-// ── Add entry to chirp log ────────────────────────────────────
 function addChirpLog(text) {
   const logEl = document.getElementById('chirp-log');
-
-  // Remove empty state
-  const empty = logEl.querySelector('div[style*="text-align"]');
-  if (empty) empty.remove();
-
+  const empty = logEl.querySelector('div[style*="text-align"], div[style]');
+  if (empty && logEl.children.length === 1) empty.remove();
   const time = new Date().toTimeString().slice(0,8);
   const item = document.createElement('div');
   item.className = 'chirp-log-item';
-  item.innerHTML = `
-    <span class="chirp-log-time">${time}</span>
-    <span>${text}</span>`;
+  item.innerHTML = `<span class="chirp-log-time">${time}</span><span>${text}</span>`;
   logEl.insertBefore(item, logEl.firstChild);
-
-  while (logEl.children.length > 10) {
-    logEl.removeChild(logEl.lastChild);
-  }
+  while (logEl.children.length > 8) logEl.removeChild(logEl.lastChild);
 }
 
-// ── Socket.IO — listen for chirp events ──────────────────────
-// Add this inside your existing connectSocket() function:
-// socket.on('chirp_detected', (data) => onChirpDetected(data));
+function startChirpPolling() {
+  chirpPollTimer = setInterval(async () => {
+    try {
+      const res  = await fetch('/chirp/status');
+      const data = await res.json();
+      if (data.total_detections > chirpCount) {
+        chirpCount = data.total_detections;
+        onChirpDetected(data.history[data.history.length - 1]);
+      }
+    } catch(e) {}
+  }, 500);
+}
 
-// ── Init chirp panel ──────────────────────────────────────────
+function stopChirpPolling() { clearInterval(chirpPollTimer); }
+
 document.addEventListener('DOMContentLoaded', () => {
   buildWaveform();
-
-  // Check if detector was already running
-  fetch('/chirp/status').then(r => r.json()).then(data => {
+  startWaveAnimation();
+  fetch('/chirp/status').then(r=>r.json()).then(data => {
     if (data.running) {
       chirpActive = true;
       chirpCount  = data.total_detections;
-      updateChirpUI(true);
-      startWaveAnimation();
       startChirpPolling();
-      document.getElementById('chirp-status').textContent =
-        'Listening for chirp beacon...';
+      document.getElementById('chirp-status').textContent = 'Listening for chirp beacon...';
+      document.getElementById('chirp-panel').classList.add('active');
+      document.getElementById('chirp-waveform').classList.add('listening');
     }
-  }).catch(() => {});
+  }).catch(()=>{});
 });
 
-// ════════════════════════════════════════════════════════════
-// SIDEBAR — Case History & Logs
-// ════════════════════════════════════════════════════════════
-
-let sbDispatches = [];   // [{id, alert, team, time}]
-let sbLogEntries = [];   // [{text, color, time}]
+// ══════════════════════════════════════════════════════════════
+// SIDEBAR
+// ══════════════════════════════════════════════════════════════
+let sbDispatches = [];
+let sbLogEntries = [];
 let sbActiveTab  = 'resolved';
 
 function openSidebar(tab) {
@@ -1557,17 +1216,15 @@ function closeSidebar() {
 
 function switchTab(tab) {
   sbActiveTab = tab;
-  // Update tab buttons
   ['resolved','dispatched','log'].forEach(t => {
-    const btn = document.getElementById('tab-' + t);
-    const pan = document.getElementById('sb-panel-' + t);
+    const btn = document.getElementById('tab-'+t);
+    const pan = document.getElementById('sb-panel-'+t);
     if (t === tab) {
       btn.classList.add('active');
       pan.classList.add('active');
-      // Color
       btn.classList.remove('green-tab','amber-tab');
-      if (t === 'resolved')   btn.classList.add('green-tab');
-      if (t === 'dispatched') btn.classList.add('amber-tab');
+      if (t==='resolved')   btn.classList.add('green-tab');
+      if (t==='dispatched') btn.classList.add('amber-tab');
     } else {
       btn.classList.remove('active');
       pan.classList.remove('active');
@@ -1587,156 +1244,94 @@ async function updateSbChips() {
   try {
     const res   = await fetch('/stats');
     const stats = await res.json();
-    const disp  = stats.dispatched || 0;
-    // Count resolved as dispatched (backend uses dispatched status)
-    document.getElementById('sb-resolved-count').textContent  = resolved.size;
-    document.getElementById('sb-dispatch-count').textContent  = disp;
-    document.getElementById('sb-log-count').textContent       = sbLogEntries.length;
-    const total = resolved.size + disp;
+    document.getElementById('sb-resolved-count').textContent = resolved.size;
+    document.getElementById('sb-dispatch-count').textContent = stats.dispatched || 0;
+    document.getElementById('sb-log-count').textContent      = sbLogEntries.length;
+    const total = resolved.size + (stats.dispatched || 0);
     const badge = document.getElementById('sb-badge');
     badge.textContent = total;
-    if (total > 0) badge.classList.add('visible');
-    else           badge.classList.remove('visible');
+    if (total > 0) badge.classList.add('visible'); else badge.classList.remove('visible');
   } catch {
-    // fallback to local counts
-    const total = resolved.size + sbDispatches.length;
     document.getElementById('sb-resolved-count').textContent = resolved.size;
     document.getElementById('sb-dispatch-count').textContent = sbDispatches.length;
     document.getElementById('sb-log-count').textContent      = sbLogEntries.length;
-    const badge = document.getElementById('sb-badge');
-    badge.textContent = total;
-    if (total > 0) badge.classList.add('visible');
-    else badge.classList.remove('visible');
   }
 }
 
 async function renderResolvedPanel() {
   const el = document.getElementById('sb-resolved-list');
-  el.innerHTML = `<div style="padding:20px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--grey-mid);">Loading...</div>`;
-
   try {
-    // Fetch ALL alerts from server — filter resolved ones
     const res    = await fetch('/alerts');
     const server = await res.json();
-    // Resolved = in server with status dispatched OR in local resolved set
-    const cases  = server.filter(a =>
-      resolved.has(String(a.id)) ||
-      a.status === 'resolved' ||
-      a.status === 'dispatched'
-    );
+    const cases  = server.filter(a => resolved.has(String(a.id)) || a.status==='resolved' || a.status==='dispatched');
     if (!cases.length) {
-      el.innerHTML = `<div class="sb-empty">
-        <div class="sb-empty-icon">✓</div>
-        <div class="sb-empty-title">No resolved cases yet</div>
-        <div class="sb-empty-sub">Cases appear here after you click Resolve</div>
-      </div>`;
+      el.innerHTML = `<div class="sb-empty"><div class="sb-empty-icon">✓</div><div class="sb-empty-title">No resolved cases yet</div></div>`;
       return;
     }
-    const sorted = [...cases].sort((a,b) => b.received_at - a.received_at);
-    el.innerHTML = `<div class="sb-section-label">${sorted.length} case${sorted.length !== 1 ? 's' : ''} resolved or dispatched</div>` +
-      sorted.map(a => {
-        const conf    = Math.round(a.confidence * 100);
-        const confCls = conf >= 85 ? 'conf-high' : conf >= 65 ? 'conf-med' : 'conf-low';
-        const dispatch= sbDispatches.find(d => String(d.id) === String(a.id));
-        const altId   = 'ALT-' + String(a.id).slice(-4);
-        const ts      = a.timestamp || '—';
-        const lat     = a.latitude  ? a.latitude.toFixed(4)  : '—';
-        const lng     = a.longitude ? a.longitude.toFixed(4) : '—';
-        const mapsUrl = a.latitude
-          ? `https://www.google.com/maps/search/?api=1&query=${a.latitude},${a.longitude}` : '#';
-        const isDispatched = a.status === 'dispatched' || dispatch;
-        const team    = a.team || (dispatch ? dispatch.team : null);
-        const statusBadge = isDispatched
-          ? `<span class="sb-case-badge badge-dispatched">⟶ DISPATCHED</span>`
-          : `<span class="sb-case-badge badge-resolved-full">✓ RESOLVED</span>`;
-        return `
-        <div class="sb-case ${isDispatched ? 'dispatched-case' : 'resolved-case'}">
+    el.innerHTML = `<div class="sb-section-label">${cases.length} case(s)</div>` +
+      cases.map(a => {
+        const conf = Math.round(a.confidence*100);
+        const confCls = conf>=85?'conf-high':conf>=65?'conf-med':'conf-low';
+        const dispatch = sbDispatches.find(d=>String(d.id)===String(a.id));
+        const isDisp = a.status==='dispatched'||dispatch;
+        const team = a.team||(dispatch?dispatch.team:null);
+        const mapsUrl = a.latitude ? `https://www.google.com/maps/search/?api=1&query=${a.latitude},${a.longitude}` : '#';
+        return `<div class="sb-case ${isDisp?'dispatched-case':'resolved-case'}">
           <div class="sb-case-top">
-            <span class="sb-case-id">${altId}</span>
-            ${statusBadge}
+            <span class="sb-case-id">ALT-${String(a.id).slice(-4)}</span>
+            <span class="sb-case-badge ${isDisp?'badge-dispatched':'badge-resolved-full'}">${isDisp?'⟶ DISPATCHED':'✓ RESOLVED'}</span>
           </div>
-          <div class="sb-case-sound">${a.sound_type || 'Unknown'}</div>
+          <div class="sb-case-sound">${a.sound_type||'Unknown'}</div>
           <div class="sb-case-meta">
-            <span class="${confCls}">⬤ ${conf}% confidence</span>
-            <span>🕐 ${ts}</span>
-            <span>📍 ${lat}, ${lng}</span>
-            <span>🔋 ${a.battery || '—'}%</span>
-            ${a.mesh_relay ? `<span style="color:var(--blue)">📡 BLE hop ${a.hop_count||0}</span>` : '<span>📶 Direct</span>'}
+            <span class="${confCls}">⬤ ${conf}%</span>
+            <span>🕐 ${a.timestamp||'—'}</span>
+            <span>📍 ${a.latitude?a.latitude.toFixed(4)+'°':'No GPS'}</span>
+            <span>🔋 ${a.battery||'—'}%</span>
           </div>
-          ${team ? `<div class="sb-case-team">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-            ${team} ${dispatch ? 'dispatched at ' + dispatch.time : ''}
-          </div>` : ''}
-          <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">
+          ${team?`<div class="sb-case-team">▶ ${team}</div>`:''}
+          <div style="margin-top:8px;">
             <a href="${mapsUrl}" target="_blank"
               style="font-size:10px;font-family:var(--font-mono);color:var(--blue);text-decoration:none;
                      display:inline-flex;align-items:center;gap:4px;padding:4px 8px;
                      background:var(--blue-dim);border:1px solid rgba(72,149,239,.3);border-radius:5px;">
               📍 View on map
             </a>
-            ${a.origin_id ? `<span style="font-size:10px;font-family:var(--font-mono);color:var(--grey-mid);padding:4px 8px;background:var(--bg-card);border:1px solid var(--border);border-radius:5px;">Origin: ${a.origin_id}</span>` : ''}
           </div>
         </div>`;
       }).join('');
   } catch(e) {
-    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-title">Could not load from server</div><div class="sb-empty-sub">${e.message}</div></div>`;
+    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-title">Could not load</div></div>`;
   }
 }
 
 async function renderDispatchedPanel() {
   const el = document.getElementById('sb-dispatched-list');
-  el.innerHTML = `<div style="padding:20px;text-align:center;font-family:var(--font-mono);font-size:11px;color:var(--grey-mid);">Loading...</div>`;
   try {
-    const res     = await fetch('/alerts');
-    const server  = await res.json();
-    const dispatched = server.filter(a => a.status === 'dispatched');
-    // Merge with local sbDispatches for ones dispatched this session
-    const allDispatched = [...dispatched];
-    sbDispatches.forEach(d => {
-      if (!allDispatched.find(a => String(a.id) === String(d.id))) {
-        const a = alerts.find(x => String(x.id) === String(d.id));
-        if (a) allDispatched.push({...a, team: d.team, dispatch_time: d.time});
-      }
-    });
-    if (!allDispatched.length) {
-      el.innerHTML = `<div class="sb-empty">
-        <div class="sb-empty-icon">⟶</div>
-        <div class="sb-empty-title">No dispatches yet</div>
-        <div class="sb-empty-sub">When you dispatch a team it appears here</div>
-      </div>`;
+    const res      = await fetch('/alerts');
+    const server   = await res.json();
+    const dispatched = server.filter(a=>a.status==='dispatched');
+    if (!dispatched.length && !sbDispatches.length) {
+      el.innerHTML = `<div class="sb-empty"><div class="sb-empty-icon">⟶</div><div class="sb-empty-title">No dispatches yet</div></div>`;
       return;
     }
-    const sorted = [...allDispatched].sort((a,b) => b.received_at - a.received_at);
-    el.innerHTML = `<div class="sb-section-label">${sorted.length} team dispatch${sorted.length !== 1 ? 'es' : ''}</div>` +
-      sorted.map((a, i) => {
-        const conf   = Math.round((a.confidence||0) * 100);
-        const altId  = 'ALT-' + String(a.id).slice(-4);
-        const lat    = a.latitude  ? a.latitude.toFixed(4)  : '—';
-        const lng    = a.longitude ? a.longitude.toFixed(4) : '—';
-        const team   = a.team || 'Rescue Team Alpha';
-        const dtime  = a.dispatch_time || a.timestamp || '—';
-        const mapsUrl= a.latitude ? `https://www.google.com/maps/search/?api=1&query=${a.latitude},${a.longitude}` : '#';
-        return `
-        <div class="sb-case dispatched-case">
+    const all = [...dispatched];
+    sbDispatches.forEach(d => { if (!all.find(a=>String(a.id)===String(d.id))) { const a=alerts.find(x=>String(x.id)===String(d.id)); if(a) all.push({...a,team:d.team,dispatch_time:d.time}); } });
+    el.innerHTML = `<div class="sb-section-label">${all.length} dispatch(es)</div>` +
+      all.map(a => {
+        const conf=Math.round((a.confidence||0)*100);
+        const mapsUrl=a.latitude?`https://www.google.com/maps/search/?api=1&query=${a.latitude},${a.longitude}`:'#';
+        return `<div class="sb-case dispatched-case">
           <div class="sb-case-top">
-            <span class="sb-case-id">${altId} · #${sorted.length - i}</span>
+            <span class="sb-case-id">ALT-${String(a.id).slice(-4)}</span>
             <span class="sb-case-badge badge-dispatched">⟶ DISPATCHED</span>
           </div>
-          <div class="sb-case-sound">${a.sound_type || 'Unknown'}</div>
+          <div class="sb-case-sound">${a.sound_type||'Unknown'}</div>
           <div class="sb-case-meta">
-            <span>👥 ${team}</span>
-            <span>🕐 ${dtime}</span>
-            <span>⬤ ${conf}% confidence</span>
-            <span>📍 ${lat}, ${lng}</span>
-            <span>🔋 ${a.battery||'—'}%</span>
-            ${a.mesh_relay ? `<span style="color:var(--blue)">📡 BLE hop ${a.hop_count||0}</span>` : ''}
+            <span>👥 ${a.team||'Rescue Team Alpha'}</span>
+            <span>⬤ ${conf}%</span>
+            <span>📍 ${a.latitude?a.latitude.toFixed(4)+'°':'No GPS'}</span>
           </div>
-          <div class="sb-case-team">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/>
-            </svg>
-            ${team} deployed at ${dtime}
-          </div>
+          <div class="sb-case-team">▶ ${a.team||'Rescue Team Alpha'}</div>
           <div style="margin-top:8px;">
             <a href="${mapsUrl}" target="_blank"
               style="font-size:10px;font-family:var(--font-mono);color:var(--blue);text-decoration:none;
@@ -1748,142 +1343,41 @@ async function renderDispatchedPanel() {
         </div>`;
       }).join('');
   } catch(e) {
-    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-title">Could not load</div><div class="sb-empty-sub">${e.message}</div></div>`;
+    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-title">Could not load</div></div>`;
   }
 }
 
 function renderLogPanel() {
   const el = document.getElementById('sb-log-list');
   if (!sbLogEntries.length) {
-    el.innerHTML = `<div class="sb-empty">
-      <div class="sb-empty-icon">≡</div>
-      <div class="sb-empty-title">No log entries yet</div>
-      <div class="sb-empty-sub">All dashboard activity is recorded here</div>
-    </div>`;
+    el.innerHTML = `<div class="sb-empty"><div class="sb-empty-icon">≡</div><div class="sb-empty-title">No log entries yet</div></div>`;
     return;
   }
-  const sorted = [...sbLogEntries].reverse();
-  el.innerHTML = `<div class="sb-section-label">${sorted.length} entries</div>
-    <div style="display:flex;flex-direction:column;">` +
-    sorted.map(e => `
-      <div class="sb-log-entry">
-        <div class="sb-log-dot ${e.color || 'grey'}"></div>
+  el.innerHTML = `<div class="sb-section-label">${sbLogEntries.length} entries</div>` +
+    [...sbLogEntries].reverse().map(e =>
+      `<div class="sb-log-entry">
+        <div class="sb-log-dot ${e.color||'grey'}"></div>
         <div class="sb-log-time">${e.time}</div>
         <div class="sb-log-text">${e.text}</div>
-      </div>`).join('') +
-    '</div>';
+      </div>`).join('');
 }
 
-// ── Hook into existing log() function ──
-// Wrap original log to also capture into sbLogEntries
-const _origLog = typeof log === 'function' ? log : null;
 function sbCaptureLog(text, color) {
-  const time = new Date().toTimeString().slice(0,8);
-  sbLogEntries.push({ text, color: color || 'grey', time });
+  sbLogEntries.push({ text, color: color||'grey', time: new Date().toTimeString().slice(0,8) });
   updateSbChips();
 }
 
-// ── Hook into dispatch() ──
-const _origDispatch = typeof dispatch === 'function' ? dispatch : null;
 function sbCaptureDispatch(id, alert, team) {
-  const time = new Date().toTimeString().slice(0,8);
-  sbDispatches.push({ id, alert, team, time });
+  sbDispatches.push({ id, alert, team, time: new Date().toTimeString().slice(0,8) });
   updateSbChips();
 }
 
-// ── Keyboard shortcut: H to open sidebar ──
 document.addEventListener('keydown', e => {
-  if (e.key === 'h' || e.key === 'H') {
-    const sb = document.getElementById('sidebar');
-    if (sb.classList.contains('open')) closeSidebar();
-    else openSidebar('resolved');
+  if (e.key==='h'||e.key==='H') {
+    document.getElementById('sidebar').classList.contains('open') ? closeSidebar() : openSidebar('resolved');
   }
-  if (e.key === 'Escape') closeSidebar();
+  if (e.key==='Escape') closeSidebar();
 });
-
 </script>
-
-<!-- ── Sidebar Overlay ── -->
-<div class="sidebar-overlay" id="sb-overlay" onclick="closeSidebar()"></div>
-
-<!-- ── Sidebar ── -->
-<div class="sidebar" id="sidebar">
-
-  <!-- Header -->
-  <div class="sidebar-header">
-    <div class="sidebar-title">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-        <polyline points="14 2 14 8 20 8"/>
-      </svg>
-      Case History &amp; Logs
-    </div>
-    <button class="sidebar-close" onclick="closeSidebar()">✕ Close</button>
-  </div>
-
-  <!-- Summary chips -->
-  <div class="sb-chips">
-    <div class="sb-chip green">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-      <span id="sb-resolved-count">0</span> Resolved
-    </div>
-    <div class="sb-chip amber">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-      <span id="sb-dispatch-count">0</span> Dispatched
-    </div>
-    <div class="sb-chip blue">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      <span id="sb-log-count">0</span> Log entries
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="sb-tabs">
-    <button class="sb-tab active green-tab" id="tab-resolved" onclick="switchTab('resolved')">
-      ✓ Resolved
-    </button>
-    <button class="sb-tab amber-tab" id="tab-dispatched" onclick="switchTab('dispatched')">
-      ⟶ Dispatched
-    </button>
-    <button class="sb-tab" id="tab-log" onclick="switchTab('log')">
-      ≡ Activity Log
-    </button>
-  </div>
-
-  <!-- Tab: Resolved cases -->
-  <div class="sb-panel active" id="sb-panel-resolved">
-    <div id="sb-resolved-list">
-      <div class="sb-empty">
-        <div class="sb-empty-icon">✓</div>
-        <div class="sb-empty-title">No resolved cases yet</div>
-        <div class="sb-empty-sub">Cases appear here after you click Resolve</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab: Dispatched cases -->
-  <div class="sb-panel" id="sb-panel-dispatched">
-    <div id="sb-dispatched-list">
-      <div class="sb-empty">
-        <div class="sb-empty-icon">⟶</div>
-        <div class="sb-empty-title">No dispatches yet</div>
-        <div class="sb-empty-sub">Dispatched teams appear here</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tab: Activity log -->
-  <div class="sb-panel" id="sb-panel-log">
-    <div id="sb-log-list">
-      <div class="sb-empty">
-        <div class="sb-empty-icon">≡</div>
-        <div class="sb-empty-title">No log entries yet</div>
-        <div class="sb-empty-sub">All activity is recorded here</div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
 </body>
 </html>

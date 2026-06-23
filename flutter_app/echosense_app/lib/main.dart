@@ -10,7 +10,6 @@ import 'screens/acoustic_beacon_screen.dart';
 import 'screens/about_screen.dart';
 import 'services/database_service.dart';
 import 'services/audio_service.dart';
-import 'services/background_audio_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,25 +26,23 @@ void main() async {
   final isRegistered = await DatabaseService.isRegistered();
   print('Main: User registered = $isRegistered');
 
-  // Register the background service's entry point. This is cheap and
-  // has no side effects on its own (it does NOT start listening yet)
-  // — it just tells flutter_background_service what to run if/when
-  // start() is called below or later from home_screen.dart's
-  // Disaster Mode toggle.
-  await BackgroundAudioService.initialize();
-
-  // Only actually START background monitoring if the user has
-  // already registered — an unregistered user has no emergency
-  // contacts saved yet, so there'd be nowhere for an alert to go.
-  // Once registration completes, home_screen.dart's Disaster Mode
-  // toggle (the same place that already starts the foreground
-  // AudioService) is responsible for calling
-  // BackgroundAudioService.start() for newly-registered users in
-  // this same app session.
-  if (isRegistered) {
-    await BackgroundAudioService.start();
-    print('Main: Background monitoring started for registered user');
-  }
+  // NOTE: background detection while the app is fully closed is now
+  // handled by DistressDetectionService.kt — a native Android
+  // foreground service (AudioRecord + on-device CNN inference, see
+  // MainActivity.kt's native_detection MethodChannel) — NOT by
+  // Flutter's flutter_background_service. That approach
+  // (background_audio_service.dart) was removed after confirming, on
+  // real-device testing across the entire project, that
+  // flutter_sound's recorder throws MissingPluginException when
+  // initialised from the background isolate flutter_background_service
+  // spins up: "No implementation found for method openRecorder on
+  // channel xyz.canardoux.flutter_sound_recorder". Both
+  // flutter_background_service_android and flutter_sound register
+  // their native method handlers against specific Flutter engines,
+  // and the background isolate is a genuinely separate, headless
+  // engine with no handler registered for either plugin — a
+  // structural limitation of that approach, not a configuration
+  // issue, so it was abandoned rather than worked around.
 
   runApp(ResQNetApp(isRegistered: isRegistered));
 }

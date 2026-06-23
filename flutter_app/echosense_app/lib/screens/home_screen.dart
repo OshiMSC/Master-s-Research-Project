@@ -63,6 +63,16 @@ class _HomeScreenState extends State<HomeScreen>
   DateTime? _lastAlertTime;
   static const _alertDebounce = Duration(seconds: 30);
 
+  // ── Native background detection channel ───────────────────
+  // Communicates with DistressDetectionService.kt — the native
+  // Android foreground service that runs CNN inference via
+  // AudioRecord even when the app is backgrounded or the screen
+  // is locked. Started/stopped alongside the Dart pipeline in
+  // initState() and _buildDisasterToggle(), so both pipelines
+  // always run in parallel when Disaster Mode is active.
+  static const _nativeChannel = MethodChannel(
+      'com.example.echosense_app/native_detection');
+
   // ── Animation controllers ─────────────────────────────────
   late AnimationController _ringCtrl;
   late AnimationController _waveCtrl;
@@ -129,8 +139,35 @@ class _HomeScreenState extends State<HomeScreen>
           onDetected: _handleEmergencyTriggered,
           onStatus:   _handleStatusChanged,
         );
+        // Start native background service in parallel — it survives
+        // the screen locking and the app being backgrounded, unlike
+        // the Dart pipeline which suspends when Flutter's engine is
+        // not in the foreground. Both run simultaneously so detection
+        // works both while the app is open (Dart) and after it's
+        // closed/backgrounded (native Kotlin).
+        _nativeChannel.invokeMethod('startNativeDetection').catchError(
+          (e) => print('HomeScreen: Native detection start failed — $e'));
       }
     });
+
+    // FIX: previously, MeshService.startMesh() was ONLY ever called
+    // from inside _startMeshBroadcast() (i.e. only when THIS phone
+    // had its own alert to send) or from the manual Relay Mode
+    // button. That meant a phone just sitting on the home screen in
+    // ordinary Disaster Mode — with no emergency of its own, and
+    // nobody having pressed Relay Mode — was NEVER scanning for
+    // nearby packets at all. Confirmed via real-device log: a second
+    // phone broadcasting an SOS sat undetected by this phone until
+    // Relay Mode was pressed manually, even though both phones had
+    // disaster mode on. Starting the mesh here, the same way
+    // AudioService.startListening() already runs automatically,
+    // means background scanning is simply always on for anyone with
+    // the app open in Disaster Mode — exactly the same idea as the
+    // scan-burst fix for victims, just for the "ordinary bystander"
+    // case that was still missing.
+    if (_disasterMode && mounted) {
+      MeshService.startMesh();
+    }
   }
 
   // ── Setup mesh callbacks ──────────────────────────────────
@@ -228,12 +265,27 @@ class _HomeScreenState extends State<HomeScreen>
     );
 
     if (!mounted) return;
-    Navigator.pushNamed(context, '/emergency', arguments: {
+    await Navigator.pushNamed(context, '/emergency', arguments: {
       'soundType':  result.soundType,
       'confidence': result.confidence,
       'latitude':   lat,
       'longitude':  lng,
     });
+    // FIX: _alertActiveLocked was previously never reset anywhere in
+    // this file once set true — meaning after the FIRST real alert
+    // ever fired in an app session, every subsequent VAD status
+    // update was silently swallowed by _handleStatusChanged()'s
+    // guard, forever, even long after returning to a normal home
+    // screen. Resetting here, when control returns from the
+    // emergency screen (the user backed out or it popped itself),
+    // restores normal status updates for any future detection.
+    if (mounted) {
+      setState(() {
+        _alertActiveLocked = false;
+        _systemStatus = 'AI Monitoring Active';
+        _systemColor  = ResQColors.green;
+      });
+    }
   }
 
   // ── Beacon self-report alert ──────────────────────────────
@@ -300,7 +352,7 @@ class _HomeScreenState extends State<HomeScreen>
     print('HomeScreen: Beacon complete — SMS+Dashboard+Telegram+BLE');
     
     if (!mounted) return;
-        Navigator.push(
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => ActiveEmergencyScreen(
@@ -312,6 +364,15 @@ class _HomeScreenState extends State<HomeScreen>
             ),
           ),
         );
+    // FIX: same _alertActiveLocked reset as _handleEmergencyTriggered
+    // — see that method's comment for the full explanation.
+    if (mounted) {
+      setState(() {
+        _alertActiveLocked = false;
+        _systemStatus = 'All Systems Ready';
+        _systemColor  = ResQColors.green;
+      });
+    }
   }
 
   // ── BLE mesh broadcast ────────────────────────────────────
@@ -471,7 +532,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
 
     if (!mounted) return;
-    Navigator.push(context, MaterialPageRoute(
+    await Navigator.push(context, MaterialPageRoute(
       builder: (_) => ActiveEmergencyScreen(
         soundType:    'Manual SOS (button pressed)',
         confidence:   1.0,
@@ -479,6 +540,15 @@ class _HomeScreenState extends State<HomeScreen>
         longitude:    lng,
         alreadySent:  true,   // SMS already sent above — skip duplicate
       )));
+    // FIX: same _alertActiveLocked reset as _handleEmergencyTriggered
+    // — see that method's comment for the full explanation.
+    if (mounted) {
+      setState(() {
+        _alertActiveLocked = false;
+        _systemStatus = 'All Systems Ready';
+        _systemColor  = ResQColors.green;
+      });
+    }
   }
 
   @override
@@ -488,6 +558,12 @@ class _HomeScreenState extends State<HomeScreen>
     _holdCtrl.dispose();
     _meshPulseCtrl.dispose();
     AudioService.stopListening();
+    // Stop native service when the widget tears down — the native
+    // service is a foreground service so it survives normal app
+    // backgrounding intentionally, but on a full widget disposal
+    // (e.g. during a hot restart or clean app exit) we should
+    // signal it cleanly rather than leave it running orphaned.
+    _nativeChannel.invokeMethod('stopNativeDetection').catchError((_) {});
     ChirpService.stopChirp();
     if (_meshActive) MeshService.stopMesh();
     super.dispose();
@@ -758,9 +834,10 @@ class _HomeScreenState extends State<HomeScreen>
 
     return Row(children: actions.asMap().entries.map((e) {
       final i = e.key; final a = e.value;
+      final isLast = i == actions.length - 1;
       return Expanded(child: Padding(
         padding: EdgeInsets.only(
-          left: i == 0 ? 0 : 5, right: i == 2 ? 0 : 5),
+          left: i == 0 ? 0 : 5, right: isLast ? 0 : 5),
         child: GestureDetector(
           onTap: a.onTap,
           child: AnimatedContainer(
@@ -1042,8 +1119,22 @@ class _HomeScreenState extends State<HomeScreen>
           onDetected: _handleEmergencyTriggered,
           onStatus:   _handleStatusChanged,
         );
+        // Start native service alongside Dart pipeline
+        _nativeChannel.invokeMethod('startNativeDetection').catchError(
+          (e) => print('HomeScreen: Native detection start failed — $e'));
+        // Same fix as initState(): start background mesh scanning
+        // automatically whenever disaster mode turns on, instead of
+        // only when this phone has its own alert to send or Relay
+        // Mode is pressed manually — otherwise a phone toggled back
+        // into disaster mode sits there not listening for anyone
+        // else's nearby alert at all.
+        await MeshService.startMesh();
+        if (mounted) setState(() => _meshActive = true);
       } else {
         await AudioService.stopListening();
+        // Stop native service alongside Dart pipeline
+        _nativeChannel.invokeMethod('stopNativeDetection').catchError(
+          (e) => print('HomeScreen: Native detection stop failed — $e'));
         if (_meshActive) {
           await MeshService.stopMesh();
           setState(() { _meshActive = false; _meshStatus = ''; _meshRole = ''; });

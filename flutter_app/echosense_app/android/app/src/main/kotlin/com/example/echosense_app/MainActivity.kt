@@ -1,6 +1,7 @@
 package com.example.echosense_app
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.telephony.SmsManager
@@ -13,6 +14,7 @@ import io.flutter.plugin.common.MethodChannel
 class MainActivity : FlutterActivity() {
 
     private val CHANNEL = "com.resqnet.sms/send"
+    private val NATIVE_DETECTION_CHANNEL = "com.example.echosense_app/native_detection"
     private val SMS_PERMISSION_CODE = 101
 
     // Classic Bluetooth fallback beacon — second, independent broadcast
@@ -125,6 +127,40 @@ class MainActivity : FlutterActivity() {
                     result.success(null)
                 }
 
+                else -> result.notImplemented()
+            }
+        }
+
+        // ── Native distress detection ──────────────────────────
+        // Separate channel from the SMS one above — keeps this
+        // native pipeline fully independent from the existing,
+        // working SMS logic. Starts/stops DistressDetectionService,
+        // the AudioRecord-based foreground service that captures
+        // audio without depending on the Flutter engine (built to
+        // sidestep the confirmed flutter_sound cross-isolate failure
+        // from the flutter_background_service attempt — see
+        // background_audio_service.dart's doc comment for that
+        // history).
+        MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            NATIVE_DETECTION_CHANNEL
+        ).setMethodCallHandler { call, result ->
+            when (call.method) {
+                "startNativeDetection" -> {
+                    val intent = Intent(this, DistressDetectionService::class.java)
+                    intent.action = DistressDetectionService.ACTION_START
+                    startService(intent)
+                    result.success(true)
+                }
+                "stopNativeDetection" -> {
+                    val intent = Intent(this, DistressDetectionService::class.java)
+                    intent.action = DistressDetectionService.ACTION_STOP
+                    startService(intent)
+                    result.success(true)
+                }
+                "isNativeDetectionRunning" -> {
+                    result.success(DistressDetectionService.isRunning)
+                }
                 else -> result.notImplemented()
             }
         }

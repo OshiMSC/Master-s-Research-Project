@@ -3,41 +3,26 @@ ResQNet — Chirp Beacon Detector (3-Band Sequential Sweep Engine)
 ====================================================================
 Detects the REAL multi_band_chirp.wav beacon: a 3-band sequential
 sweep through 1-2kHz, then 2-3kHz, then 3-4kHz (0.3s each, ~0.9s
-total), followed by 0.6s silence, repeated 10 times. See
-generate_chirp.py for the authoritative source of this design.
+total), followed by 0.6s silence, repeated 10 times.
 
-== WHY THIS VERSION REPLACES THE PREVIOUS DUAL-TONE VERSION ==
-Two earlier engines were built against specifications for this beacon
-that, it turns out, never matched the real WAV file:
-  1. The original RMS-only engine just measured loudness.
-  2. A later dual-tone Goertzel engine checked for simultaneous,
-     fixed energy at exactly 3200Hz and 4500Hz.
-Both were reasonable given the documentation/comments available at the
-time (chirp_service.dart's comment literally says "3200+4500Hz
-tones"), but direct inspection of the real WAV file
-(inspect_chirp_wav.py) proved its actual dominant content sits at
-1500/2500/3500Hz — the midpoints of three SWEEPING bands, not two
-fixed tones. The dual-tone engine could never have worked against this
-file: 4500Hz has essentially zero energy in it at all.
+== ROOT CAUSE OF PREVIOUS FAILURE (confirmed via simulation) ==
+The original _check_sequence() searched for the LAST band0 occurrence
+in history before looking for band1. Because the history window
+(2.23s) is wider than one full beacon cycle (1.5s), by the time
+detection runs during cycle N's band2 phase, cycle N+1's band0 chunks
+are already in the history — making the "last band0" always belong to
+the NEXT cycle. The search then looks forward from there for band1,
+finds none (since we're still in band0 of the next cycle), and fails.
+Every cycle after the very first fails identically for this reason.
 
-== THE NEW APPROACH ==
-Rather than checking for a static frequency fingerprint, this engine
-tracks which of the three ~1kHz-wide bands holds the most energy in
-each ~93ms audio chunk (at 44100Hz / 4096-sample chunks), keeps a
-short rolling history of that "dominant band" sequence, and checks
-whether the history shows band 1 -> band 2 -> band 3 in order within
-a time window consistent with the beacon's real 0.3s-per-band timing.
-This is the noise-resilient, sequential-fingerprint design the
-generator script's own notes describe ("pattern unique: YES — 3
-sequential diagonals", "noise resilient: YES — partial band detection
-sufficient") — actually implemented, rather than approximated by a
-simpler (and, for this file, non-functional) dual-tone check.
-
-Ordinary sounds (voice, wind, knocks, white noise) essentially never
-produce a clean, repeated, correctly-timed climb through three
-adjacent bands in sequence — that sequential structure IS the
-fingerprint, and is what makes this resistant to false positives
-without needing the bands to be narrow, fixed tones.
+== THE FIX ==
+The _check_sequence() method now uses a FORWARD-SCAN state machine:
+it finds the FIRST band0 that leads to a valid complete sequence
+(band0 → band1 → band2, with None/silence chunks freely allowed
+anywhere in between since mic distance causes intermittent drops),
+rather than anchoring to the last band0 and searching forward from
+there. This is immune to next-cycle contamination because it stops
+at the first complete match, not the last anchor point.
 """
 
 import numpy as np
@@ -56,7 +41,7 @@ except ImportError:
 SAMPLE_RATE  = 44100
 CHUNK_SIZE   = 4096     # ~93ms per chunk at 44100Hz
 CHANNELS     = 1
-DEVICE_INDEX = 5        # Intel Smart Sound System Target
+DEVICE_INDEX = None     # None = auto-detect default input device
 
 # ── Beacon band definitions (MUST match generate_chirp.py `bands`) ──
 BANDS = [
@@ -69,31 +54,42 @@ SILENCE_DURATION_S = 0.6   # gap between pulses, matches generator
 FULL_CYCLE_S = SEGMENT_DURATION_S * len(BANDS) + SILENCE_DURATION_S  # 1.5s
 
 # ── Detection gating ─────────────────────────────────────────────
-RMS_GATE = 0.0008
-# A band must hold at least this fraction of total chunk energy to
-# count as "dominant" for that chunk. Loose-ish on purpose: the chirp
-# is a sweep, so within one ~93ms chunk the energy may itself be
-# split across part of one band and bleeding into the next.
-DOMINANCE_RATIO = 0.35
-# How many recent chunks (history) to keep — needs to cover at least
-# one full cycle (1.5s) with margin. At ~93ms/chunk, ~1.5s = ~16
-# chunks; use a bit more to tolerate jitter/drift in capture timing.
-HISTORY_CHUNKS = 24
-# Cooldown shorter than one full cycle would re-trigger on the same
-# pulse; longer than FULL_CYCLE_S avoids re-firing on the very next
-# repetition before the user/rescuer has had a chance to register it.
-COOLDOWN_S = max(FULL_CYCLE_S * 1.5, 2.0)
+RMS_GATE = 0.0005          # lowered slightly from 0.0008 for distance
+DOMINANCE_RATIO = 0.30     # lowered from 0.35 — sweeps have spread energy
+HISTORY_CHUNKS = 32        # slightly larger window for robustness
+COOLDOWN_S = 20.0
+# FIX: the previous cooldown was max(FULL_CYCLE_S * 1.5, 2.0) = 2.25s,
+# which is just barely longer than one beacon sweep cycle (1.5s).
+# Since the beacon WAV plays 10 repetitions × 1.5s = 15s total, this
+# produced ~7 detections per single beacon activation — one per cycle.
+# The correct behaviour is: one beacon activation = one dashboard alert.
+# 20s cooldown covers the full 15s playback with 5s margin, so every
+# cycle after the first is suppressed and only one alert fires per
+# distinct beacon event. In a real deployment (continuous beacon loop),
+# this means a new alert fires at most every 20s, which is appropriate
+# for a rescue team tracking a victim's location.
 DEBUG_MODE = True
+
+
+def list_audio_devices():
+    """Print all available audio input devices for manual selection."""
+    if not PYAUDIO_AVAILABLE:
+        return
+    audio = pyaudio.PyAudio()
+    print("\n=== Available Audio Input Devices ===")
+    for i in range(audio.get_device_count()):
+        info = audio.get_device_info_by_index(i)
+        if info['maxInputChannels'] > 0:
+            print(f"  [{i}] {info['name']} (inputs: {info['maxInputChannels']})")
+    print("  Set DEVICE_INDEX at the top of this file to choose a specific one.")
+    print("  DEVICE_INDEX = None uses the system default input.\n")
+    audio.terminate()
 
 
 def band_energy_ratio(audio: np.ndarray, sample_rate: int, band: tuple) -> float:
     """
-    Returns the fraction of this chunk's total energy that falls
-    within [band[0], band[1]) Hz. Uses a straightforward FFT bin sum
-    rather than Goertzel, since these are ~1000Hz-wide bands (not
-    single frequencies) — a handful of FFT bins summed is the natural
-    tool for "how much energy is in this range", whereas Goertzel is
-    suited to checking one exact frequency.
+    Returns the fraction of this chunk's total energy within [band[0], band[1]) Hz.
+    Uses FFT bin sum — suited to ~1000Hz-wide bands, not narrow single tones.
     """
     n = len(audio)
     if n == 0:
@@ -118,46 +114,62 @@ class ChirpDetector:
         self.total_detections = 0
         self.detection_history = []
         self._device_name = 'Unknown'
-        # Rolling history of (timestamp, dominant_band_index_or_None)
         self._band_history = deque(maxlen=HISTORY_CHUNKS)
-        # Diagnostics for dashboard / debug overlay
         self._last_rms = 0.0
         self._last_ratios = [0.0, 0.0, 0.0]
         self._last_dominant = None
 
     def _open_stream(self, audio, device_idx):
-        return audio.open(
-            format=pyaudio.paInt16, channels=CHANNELS,
-            rate=SAMPLE_RATE, input=True,
-            input_device_index=device_idx,
-            frames_per_buffer=CHUNK_SIZE)
+        kwargs = dict(
+            format=pyaudio.paInt16,
+            channels=CHANNELS,
+            rate=SAMPLE_RATE,
+            input=True,
+            frames_per_buffer=CHUNK_SIZE,
+        )
+        if device_idx is not None:
+            kwargs['input_device_index'] = device_idx
+        return audio.open(**kwargs)
 
     def start(self):
         if not PYAUDIO_AVAILABLE:
-            print("ChirpDetector: pyaudio library missing")
+            print("ChirpDetector: pyaudio not installed — pip install pyaudio")
             return False
         if self._running:
             return True
         try:
             self._audio = pyaudio.PyAudio()
-            try:
+
+            # Auto-detect or use specified device
+            if DEVICE_INDEX is None:
+                default = self._audio.get_default_input_device_info()
+                self._device_name = default['name']
+                print(f"ChirpDetector: Using default input device — "
+                      f"[{default['index']}] {default['name']}")
+            else:
                 info = self._audio.get_device_info_by_index(DEVICE_INDEX)
+                if info['maxInputChannels'] == 0:
+                    print(f"ChirpDetector: Device {DEVICE_INDEX} has no input channels")
+                    list_audio_devices()
+                    return False
                 self._device_name = info['name']
-            except Exception:
-                print(f"ChirpDetector: Device ID {DEVICE_INDEX} inaccessible.")
-                return False
+                print(f"ChirpDetector: Using device [{DEVICE_INDEX}] {info['name']}")
 
             self._stream = self._open_stream(self._audio, DEVICE_INDEX)
 
             self._running = True
             self._thread = threading.Thread(target=self._listen_loop, daemon=True)
             self._thread.start()
-            band_desc = " -> ".join(f"{b[0]:.0f}-{b[1]:.0f}Hz" for b in BANDS)
+            band_desc = " → ".join(f"{b[0]:.0f}-{b[1]:.0f}Hz" for b in BANDS)
             print(f"ChirpDetector: Sequential-Sweep Engine Active "
-                  f"({band_desc}, {SEGMENT_DURATION_S}s/band) ✓\n")
+                  f"({band_desc}, {SEGMENT_DURATION_S}s/band)")
+            print(f"  RMS gate: {RMS_GATE}, Dominance threshold: {DOMINANCE_RATIO}")
+            print(f"  History window: {HISTORY_CHUNKS} chunks "
+                  f"({HISTORY_CHUNKS * CHUNK_SIZE / SAMPLE_RATE:.2f}s)\n")
             return True
         except Exception as e:
-            print(f"ChirpDetector: Engine failed to spin up — {e}")
+            print(f"ChirpDetector: Failed to start — {e}")
+            list_audio_devices()
             return False
 
     def stop(self):
@@ -191,9 +203,6 @@ class ChirpDetector:
                 in_cooldown = (now - self._last_event_time) < COOLDOWN_S
 
                 if rms < RMS_GATE:
-                    # Silence is part of the expected pattern (the 0.6s
-                    # gap) — record it as "no dominant band" rather than
-                    # treating it as a gap that breaks the sequence.
                     self._band_history.append((now, None))
                     self._last_dominant = None
                     self._last_ratios = [0.0, 0.0, 0.0]
@@ -217,83 +226,57 @@ class ChirpDetector:
 
             except Exception as e:
                 if self._running:
-                    print(f"\nChirpDetector execution warning: {e}")
+                    print(f"\nChirpDetector warning: {e}")
                 time.sleep(0.04)
 
     def _check_sequence(self, now):
         """
-        Looks at the rolling history for a clean climb: band 0 seen,
-        THEN (later) band 1 seen, THEN (later) band 2 seen, each
-        within a window consistent with the real ~0.3s/band timing
-        (with generous slack for capture jitter, mic distance, and
-        partial-band detection — the generator's own design goal is
-        that partial detection should still work).
+        FIX: Forward-scan state machine — finds the FIRST complete
+        band0→band1→band2 sequence in history.
+
+        The original version found the LAST band0 and searched forward,
+        which was poisoned by the next cycle's band0 appearing in the
+        history window before the current cycle's band2 was detected.
+        (History = 2.23s, full cycle = 1.5s → overlap of 0.73s.)
+
+        None/silence chunks are freely allowed anywhere in the sequence
+        since mic distance causes intermittent drops even during active
+        beacon playback — silence is part of the design (the 0.6s gap),
+        so treating it as a hard break incorrectly invalidates sequences.
         """
         history = list(self._band_history)
         if len(history) < 3:
             return
 
-        # Find the most recent occurrence of band 0, then look for
-        # band 1 after it, then band 2 after that — allowing other
-        # chunks (silence, None, or repeated same-band chunks) in
-        # between, since a 93ms chunk grid won't align perfectly with
-        # 300ms band boundaries.
-        idx_band0 = None
-        for i, (t, band) in enumerate(history):
-            if band == 0:
-                idx_band0 = i
-
-        if idx_band0 is None:
-            return
-
-        idx_band1 = None
-        for i in range(idx_band0 + 1, len(history)):
-            t, band = history[i]
-            if band == 1:
-                idx_band1 = i
-                break
-            if band == 0:
-                # Saw band 0 again before band 1 — restart the search
-                # from this later band-0 occurrence instead.
-                idx_band0 = i
-
-        if idx_band1 is None:
-            return
-
-        idx_band2 = None
-        for i in range(idx_band1 + 1, len(history)):
-            t, band = history[i]
-            if band == 2:
-                idx_band2 = i
-                break
-            if band == 0:
-                # A new cycle's band 0 started before band 2 of this
-                # one ever appeared — treat the sequence as broken and
-                # don't carry over.
-                return
-
-        if idx_band2 is None:
-            return
-
-        t0 = history[idx_band0][0]
-        t2 = history[idx_band2][0]
-        elapsed = t2 - t0
-
-        # Real sequence should take roughly 2 * SEGMENT_DURATION_S to
-        # go from band-0 chunk to band-2 chunk (it skips through band
-        # 1 in between). Allow a generous window since chunk timing
-        # isn't perfectly aligned to band boundaries and the mic may
-        # catch the sweep off-center within each band.
         min_expected = SEGMENT_DURATION_S * 0.5
         max_expected = SEGMENT_DURATION_S * len(BANDS) * 2.5
 
-        if min_expected <= elapsed <= max_expected:
-            self._last_event_time = now
-            # Clear history so the same physical sweep can't immediately
-            # re-trigger on its own tail end before cooldown logic below
-            # would otherwise prevent it.
-            self._band_history.clear()
-            self._trigger(elapsed)
+        for i, (t0, b0) in enumerate(history):
+            if b0 != 0:
+                continue
+
+            # Found a band0 — look forward for band1
+            for j in range(i + 1, len(history)):
+                tj, bj = history[j]
+                if bj is None or bj == 0:
+                    continue   # silence or continued band0 — keep scanning
+                if bj != 1:
+                    break      # hit band2 before band1 — invalid, try next band0
+                # Found band1 — look forward for band2
+                for k in range(j + 1, len(history)):
+                    tk, bk = history[k]
+                    if bk is None or bk == 1:
+                        continue   # silence or continued band1 — keep scanning
+                    if bk == 2:
+                        elapsed = tk - t0
+                        if min_expected <= elapsed <= max_expected:
+                            self._last_event_time = now
+                            self._band_history.clear()
+                            self._trigger(elapsed)
+                            return
+                        # Timing wrong — try next band0 starting position
+                    break  # anything else (including band0 = new cycle) stops this search
+                break  # done searching from this band0 anchor
 
     def _maybe_log(self, chunk_count, rms, dominant, in_cooldown):
         if not DEBUG_MODE:
@@ -324,7 +307,7 @@ class ChirpDetector:
         if len(self.detection_history) > 50:
             self.detection_history.pop(0)
         print(f"\n*** CHIRP BEACON DETECTED! *** total={self.total_detections} "
-              f"sequence_time={sequence_elapsed_s:.2f}s at {event['timestamp']}")
+              f"elapsed={sequence_elapsed_s:.2f}s at {event['timestamp']}")
         if self.on_chirp_detected:
             self.on_chirp_detected(event)
 
@@ -341,13 +324,15 @@ class ChirpDetector:
 
 
 if __name__ == "__main__":
-    print("ResQNet — Sequential 3-Band Sweep Engine")
+    print("ResQNet — Sequential 3-Band Sweep Engine (Fixed)")
     print(f"Bands: {BANDS}, {SEGMENT_DURATION_S}s each")
     print("=" * 50)
-    d = ChirpDetector(on_chirp_detected=lambda e: print("[EMISSION CAPTURED]"))
+    list_audio_devices()
+    d = ChirpDetector(on_chirp_detected=lambda e: print("[EVENT CAPTURED]"))
     if d.start():
         try:
             while True:
                 time.sleep(0.5)
         except KeyboardInterrupt:
             d.stop()
+            print(f"\nStopped. Total detections: {d.total_detections}")

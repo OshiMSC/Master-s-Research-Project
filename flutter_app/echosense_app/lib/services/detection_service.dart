@@ -17,7 +17,7 @@ class DetectionResult {
 class DetectionService {
   static Interpreter? _interpreter;
   static bool _modelLoaded = false;
-  static double threshold = 0.12; 
+  static double threshold = 0.20;
 
   // Audio params — must match Python training
   static const int sampleRate = 22050;
@@ -25,6 +25,45 @@ class DetectionService {
   static const int hopLength  = 512;
   static const int nMels      = 128;
   static const int timeFrames = 128;
+
+  // ── Cross-isolate interpreter sharing ──────────────────────────
+  // FIX: a compute()-spawned isolate previously failed to load its
+  // own copy of the model via Interpreter.fromAsset() — confirmed
+  // via real-device testing to fail with "Null check operator used
+  // on a null value", because that call needs Flutter's platform-
+  // channel/asset-bundle machinery, which a fresh compute() isolate
+  // isn't automatically registered for (confirmed via Flutter's own
+  // platform-channels documentation). Rather than fixing THAT
+  // (via BackgroundIsolateBinaryMessenger.ensureInitialized(), which
+  // was tried and still failed identically), this sidesteps the
+  // problem entirely: tflite_flutter's own documentation ships a
+  // built-in pattern for exactly this — sharing an ALREADY-LOADED
+  // interpreter's raw native memory address across isolates via
+  // Interpreter.fromAddress(), with no asset/platform-channel access
+  // needed at all in the receiving isolate.
+  //
+  // Returns the native address of the currently-loaded interpreter,
+  // or null if no model is loaded yet in THIS isolate (i.e. the main
+  // isolate, where loadModel() is actually called from
+  // AudioService.initialise()).
+  static int? get interpreterAddress => _interpreter?.address;
+
+  // Reconstructs a reference to an ALREADY-LOADED interpreter from
+  // its native address — does NOT load a new model from assets, does
+  // NOT need any plugin/platform-channel access. The reconstructed
+  // reference points at the SAME underlying native TFLite interpreter
+  // the main isolate already loaded and owns.
+  //
+  // IMPORTANT — ownership: do not call dispose()/close() on this
+  // reconstructed reference from within a compute isolate. Only the
+  // main isolate's original DetectionService.dispose() should ever
+  // close the underlying interpreter, since that's the isolate that
+  // actually owns/allocated it. A compute isolate calling this is
+  // borrowing a reference, not taking ownership.
+  static void attachInterpreterFromAddress(int address) {
+    _interpreter = Interpreter.fromAddress(address);
+    _modelLoaded = true;
+  }
 
   // ── Load TFLite model ────────────────────────────────────────
   static Future<bool> loadModel() async {
