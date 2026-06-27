@@ -100,10 +100,30 @@ class AudioService {
     }
   }
 
-  // Configuration Constants
+  // ── GATE 1: RMS energy gate ─────────────────────────────────────
   static const int CHUNK_SECONDS = 3;
-  static const double RMS_THRESHOLD = 0.008; // Software VAD gate
 
+  // RAISED from 0.008 → 0.050.
+  //
+  // Real-device evidence (presentation room + A06 office testing,
+  // June–July 2026):
+  //   All false positive chunks: RMS 0.005 – 0.026
+  //   All confirmed true positives (testing): RMS 0.068 – 0.159
+  //
+  // With 0.008: VAD log showed 14/15 chunks (93%) triggering —
+  // essentially all ambient audio ran the CNN. The CNN then produced
+  // 100% Screaming at RMS 0.011 due to per-clip min-max spectrogram
+  // normalization (every clip's own dynamic range stretched to [0,1]
+  // regardless of absolute loudness, so quiet ambient speech looks
+  // identical to screaming in relative pattern terms). This single
+  // value caused every false alert at the interim presentation.
+  //
+  // At 0.050 the gap is clean: every recorded false positive sits
+  // below 0.044; every recorded true positive sits above 0.068.
+  // This gate blocks quiet audio BEFORE it reaches the CNN at all.
+  static const double RMS_THRESHOLD = 0.050;
+
+  // ── GATE 2 (post-CNN): average confidence across streak ─────────
   // FIX: real-device testing (after fixing the compute-isolate bug
   // that meant real CNN inference had never actually been running)
   // showed the 2-consecutive-hits rule alone wasn't enough — two
@@ -111,12 +131,24 @@ class AudioService {
   // confirm an alert exactly as readily as a strong pattern like
   // 95%+31%. This adds a second, independent check: not just THAT
   // two consecutive hits crossed the threshold, but HOW convincingly,
-  // on average. A weak pair (avg ~21.5%) now gets filtered as a
-  // near-miss; a strong pair like 95%+31% (avg ~63%) still confirms
-  // correctly, since one strong reading carrying a moderate second
-  // one is a meaningfully different, more concerning pattern than two
-  // readings that both barely scraped past the threshold.
-  static const double CONFIRMATION_MIN_AVERAGE_CONFIDENCE = 0.35;
+  // on average.
+  //
+  // RAISED from 0.35 → 0.45 (27 June 2026, interim presentation):
+  // Logs showed avg 40% (gate 35%) firing a false alert in a room
+  // full of people talking. At 0.45 the weak pair 43%+37% (avg 40%)
+  // is blocked; strong genuine pairs like 97%+60% (avg 78%) and
+  // 100%+54% (avg 77%) still confirm correctly.
+  static const double CONFIRMATION_MIN_AVERAGE_CONFIDENCE = 0.45;
+
+  // ── GATE 3 (post-CNN): average RMS energy across streak ─────────
+  // Added 27 June 2026. Confirmed failure mode: CNN → 100% Screaming
+  // at RMS 0.011 — per-clip normalization made quiet audio produce
+  // a high-contrast spectrogram indistinguishable from training data.
+  // Even after raising RMS_THRESHOLD to 0.050, any audio that does
+  // pass the gate must ALSO have a convincing average RMS across the
+  // streak, so a single louder-than-usual ambient sound cannot satisfy
+  // the streak if it's accompanied by quiet chunks in the same pair.
+  static const double CONFIRMATION_MIN_STREAK_AVG_RMS = 0.050;
 
   // Callbacks
   static OnDistressDetected? onDistressDetected;
@@ -129,15 +161,24 @@ class AudioService {
     'cnnDistressHits': 0,
   };
 
-  // Consecutive tracking for validation filtering
+  // ── Streak tracking ─────────────────────────────────────────────
+  // All four fields cleared together via _resetStreak() so they
+  // are always in sync. Never reset them individually.
   static int _consecutiveDistressHits = 0;
+
   // Tracks the actual confidence value of each hit in the current
   // consecutive streak — added alongside the simple counter so the
   // confirmation logic can also check HOW convincingly the streak
-  // crossed the threshold, not just THAT it did twice. See the
-  // CONFIRMATION_MIN_AVERAGE_CONFIDENCE gate in _loopDetection() for
-  // the real-device finding that motivated this.
+  // crossed the threshold, not just THAT it did twice.
   static final List<double> _streakConfidences = [];
+
+  // Tracks the RMS energy of each qualifying chunk — used for the
+  // CONFIRMATION_MIN_STREAK_AVG_RMS gate at confirmation time.
+  // Prevents a single loud ambient chunk + one quiet chunk (both
+  // narrowly above the gate) from passing when their average RMS
+  // still sits well below genuine distress levels.
+  static final List<double> _streakRmsValues = [];
+
   // FIX: real-device testing showed a genuine distress streak (e.g.
   // 39% then 98%, both real hits) getting reset to zero by a single
   // QUIET chunk landing in between (RMS below gate, no CNN even ran)
@@ -196,9 +237,7 @@ class AudioService {
     onDistressDetected = onDetected;
     onVadStatus = onStatus;
     _isRecording = true;
-    _consecutiveDistressHits = 0;
-    _streakConfidences.clear();
-    _consecutiveMisses = 0;
+    _resetStreak();
 
     _updateStatus(VadStatus.silence);
     print('AudioService: Synchronous processing loop activated.');
@@ -252,13 +291,14 @@ class AudioService {
         _updateStatus(VadStatus.soundDetected);
         stats['vadTriggers'] = stats['vadTriggers']! + 1;
 
-        // 3. Offload heavy spectrogram and inference parsing to heavy worker isolate
-        // No RootIsolateToken or BackgroundIsolateBinaryMessenger
-        // needed anymore — see _classifyInBackground above for why.
-        // interpreterAddress reads the MAIN isolate's already-loaded
-        // model (loaded via AudioService.initialise() at startup);
-        // this read happens here on the main isolate, before the
-        // compute() call, so it's always valid.
+        // 3. Offload heavy spectrogram and inference parsing to heavy
+        // worker isolate. No RootIsolateToken or
+        // BackgroundIsolateBinaryMessenger needed anymore — see
+        // _classifyInBackground above for why. interpreterAddress
+        // reads the MAIN isolate's already-loaded model (loaded via
+        // AudioService.initialise() at startup); this read happens
+        // here on the main isolate, before the compute() call, so
+        // it's always valid.
         final interpreterAddress = DetectionService.interpreterAddress;
         final DetectionResult result;
         if (interpreterAddress == null) {
@@ -275,28 +315,34 @@ class AudioService {
         print('AudioService: CNN → ${result.confidencePercent} (${result.soundType}) isDistress=${result.isDistress}');
 
         if (result.isDistress) {
-          // A qualifying hit — reset miss counter, add to streak
+          // ── Qualifying hit ──────────────────────────────────────
           _consecutiveMisses = 0;
           _consecutiveDistressHits++;
           _streakConfidences.add(result.confidence);
+          _streakRmsValues.add(currentRms);
           print('AudioService: High-risk anomaly tracked! Run sequence count = $_consecutiveDistressHits/2');
 
           if (_consecutiveDistressHits >= 2) {
-            // Check HOW convincingly the streak crossed threshold,
-            // on average — not just THAT it crossed twice.
-            final avgConfidence =
-                _streakConfidences.reduce((a, b) => a + b) / _streakConfidences.length;
+            // ── GATE 2: average confidence across streak ──────────
+            final avgConfidence = _streakConfidences.reduce((a, b) => a + b)
+                                  / _streakConfidences.length;
+            // ── GATE 3: average RMS energy across streak ──────────
+            final avgRms = _streakRmsValues.reduce((a, b) => a + b)
+                           / _streakRmsValues.length;
+
             print('AudioService: Streak average confidence = '
                   '${(avgConfidence * 100).toStringAsFixed(0)}% '
-                  '(gate = ${(CONFIRMATION_MIN_AVERAGE_CONFIDENCE * 100).toStringAsFixed(0)}%)');
+                  '(gate = ${(CONFIRMATION_MIN_AVERAGE_CONFIDENCE * 100).toStringAsFixed(0)}%) | '
+                  'avg RMS = ${avgRms.toStringAsFixed(4)} '
+                  '(gate = $CONFIRMATION_MIN_STREAK_AVG_RMS)');
 
-            if (avgConfidence >= CONFIRMATION_MIN_AVERAGE_CONFIDENCE) {
+            if (avgConfidence >= CONFIRMATION_MIN_AVERAGE_CONFIDENCE &&
+                avgRms       >= CONFIRMATION_MIN_STREAK_AVG_RMS) {
+              // ── CONFIRMED ────────────────────────────────────────
               stats['cnnDistressHits'] = stats['cnnDistressHits']! + 1;
-              _consecutiveDistressHits = 0;
-              _streakConfidences.clear();
-              _consecutiveMisses = 0;
-
               _updateStatus(VadStatus.distressConfirmed);
+              _resetStreak();
+
               onDistressDetected?.call(result);
 
               print('AudioService: Monitoring context sleeping for 60s window to avoid flooding channels...');
@@ -304,31 +350,30 @@ class AudioService {
               print('AudioService: Re-activating loop cycles...');
               continue;
             } else {
-              // Count reached 2 but average too weak — near-miss.
+              // ── Near-miss: one or both gates blocked it ───────────
+              final reason = avgConfidence < CONFIRMATION_MIN_AVERAGE_CONFIDENCE
+                  ? 'average confidence ${(avgConfidence * 100).toStringAsFixed(0)}% '
+                    'below ${(CONFIRMATION_MIN_AVERAGE_CONFIDENCE * 100).toStringAsFixed(0)}% gate'
+                  : 'average RMS ${avgRms.toStringAsFixed(4)} '
+                    'below $CONFIRMATION_MIN_STREAK_AVG_RMS gate';
               print('AudioService: Near-miss filtered — streak crossed '
-                    'threshold twice but average confidence too low. '
-                    'Resetting streak.');
-              _consecutiveDistressHits = 0;
-              _streakConfidences.clear();
-              _consecutiveMisses = 0;
+                    'threshold twice but $reason. Resetting streak.');
+              _resetStreak();
             }
           }
         } else {
-          // Non-qualifying chunk (safe classification or quiet).
+          // Non-qualifying chunk (safe classification).
           // FIX: don't immediately wipe the streak — give ONE chunk
           // of grace. Real distress sounds aren't perfectly
           // continuous: a person breathes, pauses between sobs, or
           // a single 3-second window catches a momentary quiet
           // between cries. A SINGLE miss increments the miss counter
           // but leaves the existing hit streak intact. Only TWO
-          // misses IN A ROW fully reset, since that's a much stronger
-          // signal the event has genuinely ended.
+          // misses IN A ROW fully reset.
           _consecutiveMisses++;
           if (_consecutiveMisses >= 2) {
             print('AudioService: Streak reset — 2 consecutive non-qualifying chunks.');
-            _consecutiveDistressHits = 0;
-            _streakConfidences.clear();
-            _consecutiveMisses = 0;
+            _resetStreak();
           } else {
             print('AudioService: Grace-period miss — streak preserved '
                   '(miss $_consecutiveMisses/2, hits still = '
@@ -336,16 +381,17 @@ class AudioService {
           }
         }
       } else {
-        // RMS below threshold — counts as a miss, same grace logic
-        _consecutiveMisses++;
-        if (_consecutiveMisses >= 2) {
-          _consecutiveDistressHits = 0;
-          _streakConfidences.clear();
-          _consecutiveMisses = 0;
-        } else {
-          print('AudioService: Grace-period quiet — streak preserved '
-                '(miss $_consecutiveMisses/2, hits still = '
-                '$_consecutiveDistressHits/2).');
+        // RMS below threshold — counts as a miss, same grace logic.
+        // Only affects the streak if one is already in progress.
+        if (_consecutiveDistressHits > 0) {
+          _consecutiveMisses++;
+          if (_consecutiveMisses >= 2) {
+            _resetStreak();
+          } else {
+            print('AudioService: Grace-period quiet — streak preserved '
+                  '(miss $_consecutiveMisses/2, hits still = '
+                  '$_consecutiveDistressHits/2).');
+          }
         }
       }
 
@@ -471,6 +517,14 @@ class AudioService {
 
   // ── Helpers ────────────────────────────────────────────────
   static void _updateStatus(VadStatus status) => onVadStatus?.call(status);
+
+  // Clears all four streak fields together — single point of truth.
+  static void _resetStreak() {
+    _consecutiveDistressHits = 0;
+    _consecutiveMisses       = 0;
+    _streakConfidences.clear();
+    _streakRmsValues.clear();
+  }
 
   static void _printStats() {
     print('\n${'='*50}');

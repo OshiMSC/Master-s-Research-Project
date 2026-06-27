@@ -25,7 +25,7 @@
     <uses-permission android:name="android.permission.SEND_SMS"/>
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  
  
     <!-- ── Flashlight ────────────────────── -->
     <uses-permission android:name="android.permission.FLASHLIGHT"/>
@@ -103,7 +103,7 @@ https://developer.android.com/about/versions/12/features/bluetooth-permissions -
             android:exported="true"
             tools:replace="android:exported"/>
 
-        <service android:name=".DistressDetectionService" android:foregroundServiceType="microphone" android:exported="false" />
+        <service android:name=".DistressDetectionService" android:foregroundServiceType="microphone|location" android:exported="false" />
         <!-- Boot receiver to restart monitoring after reboot -->
         <receiver
             android:name="id.flutter.flutter_background_service.BootReceiver"

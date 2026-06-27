@@ -147,7 +147,7 @@
     "mesh_relay": false,
     "hop_count": 0,
     "origin_id": "",
-    "priority_score": 60.86
+    "priority_score": 90.86
   },
   {
     "id": "1781864265548",
@@ -162,7 +162,7 @@
     "mesh_relay": false,
     "hop_count": 0,
     "origin_id": "",
-    "priority_score": 62.0
+    "priority_score": 92.0
   },
   {
     "id": "1781864285649",
@@ -177,7 +177,7 @@
     "mesh_relay": true,
     "hop_count": 0,
     "origin_id": "RQN-EC01",
-    "priority_score": 62.0
+    "priority_score": 92.0
   },
   {
     "id": "1781864328569",
@@ -192,7 +192,7 @@
     "mesh_relay": true,
     "hop_count": 0,
     "origin_id": "RQN-EC01",
-    "priority_score": 62.0
+    "priority_score": 92.0
   },
   {
     "id": "1781864386945",
@@ -207,7 +207,7 @@
     "mesh_relay": true,
     "hop_count": 0,
     "origin_id": "RQN-EC01",
-    "priority_score": 62.0
+    "priority_score": 92.0
   },
   {
     "id": "1781864521311",
@@ -222,7 +222,7 @@
     "mesh_relay": false,
     "hop_count": 0,
     "origin_id": "",
-    "priority_score": 25.06
+    "priority_score": 55.06
   },
   {
     "id": "1781864590947",
@@ -237,7 +237,7 @@
     "mesh_relay": false,
     "hop_count": 0,
     "origin_id": "",
-    "priority_score": 68.81
+    "priority_score": 98.81
   },
   {
     "id": "1781864666280",
@@ -252,7 +252,7 @@
     "mesh_relay": false,
     "hop_count": 0,
     "origin_id": "",
-    "priority_score": 26.21
+    "priority_score": 56.21
   },
   {
     "id": "1781864709627",
@@ -267,6 +267,201 @@
     "mesh_relay": false,
     "hop_count": 0,
     "origin_id": "",
-    "priority_score": 41.56
+    "priority_score": 71.56
+  },
+  {
+    "id": "1782442560380",
+    "latitude": -36.8865759,
+    "longitude": 174.7469316,
+    "confidence": 1.0,
+    "sound_type": "Manual SOS (button pressed)",
+    "battery": 96,
+    "timestamp": "2026-06-26 14:55:59",
+    "status": "unresponded",
+    "received_at": 1782442560.3814147,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 92.0
+  },
+  {
+    "id": "1782446317829",
+    "latitude": -36.8866001,
+    "longitude": 174.7468889,
+    "confidence": 0.39339426159858704,
+    "sound_type": "Distress sound",
+    "battery": 94,
+    "timestamp": "2026-06-26 15:58:28",
+    "status": "unresponded",
+    "received_at": 1782446317.829346,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 61.67
+  },
+  {
+    "id": "1782446319576",
+    "latitude": -36.8866001,
+    "longitude": 174.7468889,
+    "confidence": 0.39339426159858704,
+    "sound_type": "Distress sound",
+    "battery": 94,
+    "timestamp": "2026-06-26 15:58:20",
+    "status": "unresponded",
+    "received_at": 1782446319.576165,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 61.67
+  },
+  {
+    "id": "1782446407213",
+    "latitude": -36.8865843,
+    "longitude": 174.7469076,
+    "confidence": 0.6612799167633057,
+    "sound_type": "Crying",
+    "battery": 94,
+    "timestamp": "2026-06-26 16:00:06",
+    "status": "unresponded",
+    "received_at": 1782446407.2131207,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 77.06
+  },
+  {
+    "id": "1782528122877",
+    "latitude": -36.8865873,
+    "longitude": 174.7469372,
+    "confidence": 0.6736264824867249,
+    "sound_type": "Crying",
+    "battery": 91,
+    "timestamp": "2026-06-27 14:42:00",
+    "status": "unresponded",
+    "received_at": 1782528122.8777275,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 47.68
+  },
+  {
+    "id": "1782528126867",
+    "latitude": -36.8865873,
+    "longitude": 174.7469372,
+    "confidence": 0.6736264824867249,
+    "sound_type": "Crying",
+    "battery": 91,
+    "timestamp": "2026-06-27 14:42:04",
+    "status": "unresponded",
+    "received_at": 1782528126.867289,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 47.68
+  },
+  {
+    "id": "1782528335737",
+    "latitude": -36.8866009,
+    "longitude": 174.7469553,
+    "confidence": 0.5459441542625427,
+    "sound_type": "Crying",
+    "battery": 90,
+    "timestamp": "2026-06-27 14:45:33",
+    "status": "unresponded",
+    "received_at": 1782528335.7385232,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 41.3
+  },
+  {
+    "id": "1782528351854",
+    "latitude": -36.8866009,
+    "longitude": 174.7469553,
+    "confidence": 0.5459441542625427,
+    "sound_type": "Crying",
+    "battery": 90,
+    "timestamp": "2026-06-27 14:45:50",
+    "status": "unresponded",
+    "received_at": 1782528351.8540266,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 41.3
+  },
+  {
+    "id": "1782530155212",
+    "latitude": -36.8865935,
+    "longitude": 174.7469307,
+    "confidence": 1.0,
+    "sound_type": "Acoustic Beacon (SOS)",
+    "battery": 88,
+    "timestamp": "2026-06-27 15:15:53",
+    "status": "unresponded",
+    "received_at": 1782530155.2132428,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 62.0
+  },
+  {
+    "id": "1782530434901",
+    "latitude": -36.8865966,
+    "longitude": 174.7469339,
+    "confidence": 0.7440009117126465,
+    "sound_type": "Glass breaking",
+    "battery": 87,
+    "timestamp": "2026-06-27 15:20:33",
+    "status": "unresponded",
+    "received_at": 1782530434.9022467,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 53.2
+  },
+  {
+    "id": "1782530533118",
+    "latitude": -36.8865805,
+    "longitude": 174.7469318,
+    "confidence": 0.38104331493377686,
+    "sound_type": "Distress sound",
+    "battery": 87,
+    "timestamp": "2026-06-27 15:22:11",
+    "status": "unresponded",
+    "received_at": 1782530533.1189873,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 31.05
+  },
+  {
+    "id": "1782530634187",
+    "latitude": -36.8865723,
+    "longitude": 174.7469449,
+    "confidence": 0.7202324271202087,
+    "sound_type": "Glass breaking",
+    "battery": 87,
+    "timestamp": "2026-06-27 15:23:52",
+    "status": "unresponded",
+    "received_at": 1782530634.1876724,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 52.01
+  },
+  {
+    "id": "1782530666193",
+    "latitude": -36.8865966,
+    "longitude": 174.7469339,
+    "confidence": 0.7440009117126465,
+    "sound_type": "Glass breaking",
+    "battery": 87,
+    "timestamp": "2026-06-27 15:24:24",
+    "status": "unresponded",
+    "received_at": 1782530666.1932986,
+    "mesh_relay": false,
+    "hop_count": 0,
+    "origin_id": "",
+    "priority_score": 53.2
   }
 ]

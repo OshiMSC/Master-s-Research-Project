@@ -110,7 +110,27 @@ class NativeAlertService(private val context: Context) {
         // excessively if the device truly cannot get a fix right now
         // (e.g. deep indoors with no last-known history).
         private const val LOCATION_REQUEST_TIMEOUT_SECONDS = 8L
+
+        // How old a proactively cached location is allowed to be
+        // before we fall through to a fresh fetch at alert time.
+        private const val CACHED_LOCATION_MAX_AGE_MS = 10 * 60 * 1000L  // 10 minutes
     }
+
+    // ── Proactive location cache ────────────────────────────────────
+    // Root cause of 0.0,0.0: on Android 10+ a foreground service with
+    // only foregroundServiceType="microphone" cannot access location
+    // at the cold moment sendAlert() is called — getLastKnownLocation()
+    // silently returns null and the fresh-fix request times out.
+    //
+    // Fix: start continuous location tracking as soon as Disaster Mode
+    // activates (called from DistressDetectionService.onCreate()). The
+    // first update arrives within seconds on any device that has a
+    // recent or active GPS/network fix, and all subsequent updates keep
+    // the cache fresh. At alert time we use the cached value, which is
+    // always available (no cold-start race).
+    private val cachedLocation = java.util.concurrent.atomic.AtomicReference<android.location.Location?>(null)
+    private var activeLocationManager: android.location.LocationManager? = null
+    private var activeLocationListener: android.location.LocationListener? = null
 
     data class AlertResult(
         val smsSent: Boolean,
@@ -177,6 +197,129 @@ class NativeAlertService(private val context: Context) {
         return AlertResult(smsSent, dashboardSent, telegramSent)
     }
 
+    // ── Proactive location tracking (called from DistressDetectionService) ──
+
+    /**
+     * Starts continuous location updates as soon as Disaster Mode
+     * activates. Pre-warms the cache immediately from last-known,
+     * then registers a listener for ongoing updates so the cache
+     * stays fresh throughout the monitoring session.
+     *
+     * Called from DistressDetectionService.onCreate() — before any
+     * detection even starts — so by the time an alert fires there is
+     * already a recent fix available without any cold-start wait.
+     *
+     * MANIFEST NOTE: for this to work in background on Android 10+,
+     * AndroidManifest.xml must declare:
+     *   1. <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+     *   2. The DistressDetectionService entry must include:
+     *      android:foregroundServiceType="microphone|location"
+     * Without those, getLastKnownLocation() returns null silently.
+     */
+    fun startLocationTracking() {
+        if (ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.w(TAG, "Location permission not granted — proactive tracking skipped. " +
+                    "GPS will fall back to (0.0,0.0) if no last-known fix is available.")
+            return
+        }
+
+        try {
+            val lm = context.getSystemService(Context.LOCATION_SERVICE)
+                    as android.location.LocationManager
+            activeLocationManager = lm
+
+            // Pre-warm: grab any existing last-known fix immediately
+            for (provider in listOf(
+                android.location.LocationManager.GPS_PROVIDER,
+                android.location.LocationManager.NETWORK_PROVIDER
+            )) {
+                try {
+                    @Suppress("MissingPermission")
+                    val loc = lm.getLastKnownLocation(provider)
+                    if (loc != null) {
+                        val current = cachedLocation.get()
+                        if (current == null || loc.time > current.time) {
+                            cachedLocation.set(loc)
+                            Log.i(TAG, "Pre-warmed location from $provider: " +
+                                    "${loc.latitude}, ${loc.longitude} " +
+                                    "(accuracy=${loc.accuracy}m)")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Pre-warm from $provider skipped — $e")
+                }
+            }
+
+            // Register listener for ongoing updates
+            val listener = object : android.location.LocationListener {
+                override fun onLocationChanged(location: android.location.Location) {
+                    cachedLocation.set(location)
+                    Log.i(TAG, "Location cache updated: " +
+                            "${location.latitude}, ${location.longitude} " +
+                            "(accuracy=${location.accuracy}m " +
+                            "provider=${location.provider})")
+                }
+                @Suppress("DEPRECATION")
+                override fun onStatusChanged(p: String?, s: Int, e: android.os.Bundle?) {}
+                override fun onProviderEnabled(p: String) {}
+                override fun onProviderDisabled(p: String) {
+                    Log.w(TAG, "Location provider disabled: $p")
+                }
+            }
+            activeLocationListener = listener
+
+            // Register on both providers — network is faster indoors,
+            // GPS is more accurate outdoors. Update every 30s or 10m
+            // change — enough to keep the cache fresh without draining
+            // battery during a potentially long Disaster Mode session.
+            for (provider in listOf(
+                android.location.LocationManager.NETWORK_PROVIDER,
+                android.location.LocationManager.GPS_PROVIDER
+            )) {
+                try {
+                    if (lm.isProviderEnabled(provider)) {
+                        @Suppress("MissingPermission")
+                        lm.requestLocationUpdates(
+                            provider,
+                            30_000L,  // min time: 30 seconds
+                            10f,      // min distance: 10 metres
+                            listener,
+                            android.os.Looper.getMainLooper()
+                        )
+                        Log.i(TAG, "Proactive location tracking started on $provider")
+                    } else {
+                        Log.w(TAG, "Provider $provider is disabled on this device")
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Failed to register on $provider — $e")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "startLocationTracking() failed — $e")
+        }
+    }
+
+    /** Removes the location listener registered by startLocationTracking(). */
+    fun stopLocationTracking() {
+        try {
+            activeLocationListener?.let {
+                activeLocationManager?.removeUpdates(it)
+                Log.i(TAG, "Proactive location tracking stopped")
+            }
+        } catch (e: Exception) {
+            Log.w(TAG, "stopLocationTracking() cleanup error — $e")
+        } finally {
+            activeLocationListener = null
+            activeLocationManager = null
+        }
+    }
+
     // ── Last-known location via plain Android LocationManager ──────
     // Tries both GPS and network providers (a device may have a
     // recent fix on only one of them, especially indoors), and picks
@@ -200,7 +343,22 @@ class NativeAlertService(private val context: Context) {
             return Pair(0.0, 0.0)
         }
 
+        // ── Step 1: use proactively cached location if fresh enough ──
+        cachedLocation.get()?.let { cached ->
+            val ageMs = System.currentTimeMillis() - cached.time
+            if (ageMs < CACHED_LOCATION_MAX_AGE_MS) {
+                Log.i(TAG, "Using proactively cached location: " +
+                        "${cached.latitude}, ${cached.longitude} " +
+                        "(age=${ageMs / 1000}s accuracy=${cached.accuracy}m)")
+                return Pair(cached.latitude, cached.longitude)
+            } else {
+                Log.w(TAG, "Cached location is stale (${ageMs / 1000}s old) — " +
+                        "falling through to fresh fetch")
+            }
+        }
+
         return try {
+            // ── Step 2: cold last-known fetch ─────────────────────────
             val locationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
@@ -221,16 +379,18 @@ class NativeAlertService(private val context: Context) {
             }
 
             if (best != null) {
-                Log.i(TAG, "Using last-known location: ${best.latitude}, ${best.longitude} " +
+                Log.i(TAG, "Using cold last-known location: ${best.latitude}, ${best.longitude} " +
                         "(age=${(System.currentTimeMillis() - best.time) / 1000}s)")
                 Pair(best.latitude, best.longitude)
             } else {
-                Log.w(TAG, "No last-known location available from any provider — " +
-                        "requesting a fresh fix (bounded to " +
-                        "${LOCATION_REQUEST_TIMEOUT_SECONDS}s) before falling back to (0.0, 0.0)")
+                // ── Step 3: request a fresh fix with bounded timeout ──
+                Log.w(TAG, "No last-known location available — " +
+                        "requesting fresh fix (bounded to " +
+                        "${LOCATION_REQUEST_TIMEOUT_SECONDS}s)")
                 requestFreshLocation(locationManager) ?: run {
-                    Log.w(TAG, "Fresh location request also timed out/failed — " +
-                            "sending alert with (0.0, 0.0)")
+                    Log.w(TAG, "Fresh location request also timed out — " +
+                            "sending alert with (0.0, 0.0). " +
+                            "Check AndroidManifest foregroundServiceType includes 'location'.")
                     Pair(0.0, 0.0)
                 }
             }

@@ -114,19 +114,44 @@ class DistressDetectionService : Service() {
         // normalization from detection_service.dart's already-proven
         // approach, an unverified compatibility risk taken on
         // without time to validate it against the trained model.
-        private const val RMS_THRESHOLD = 0.04
+        // ── Gate 1: RMS energy gate ────────────────────────────────────
+        // RAISED from 0.04 → 0.050. Empirical analysis across all
+        // real-device test events (June 2026):
+        //   False positives (speech, office noise): RMS 0.008 – 0.043
+        //   True positives (genuine distress):      RMS 0.068 – 0.159
+        // The gap at 0.050 blocks every recorded false positive
+        // including close-proximity conversational speech (confirmed
+        // failure mode on the husband's A06 at work) while keeping
+        // every recorded true positive. Raised from 0.04 because
+        // office speech at typical working distance (30–60 cm from
+        // phone) was measured at RMS 0.040–0.065 on the A06 device,
+        // which sits above the previous 0.04 threshold.
+        private const val RMS_THRESHOLD = 0.050
 
-        // Matches audio_service.dart's _consecutiveDistressHits logic:
-        // require 2 consecutive distress-classified chunks before
-        // treating it as confirmed, to filter single-frame false
-        // positives (a cough, a door slam, etc.).
+        // ── Gate 2: consecutive hit count ─────────────────────────────
+        // Require N qualifying chunks in sequence before confirmation.
         private const val CONSECUTIVE_HITS_REQUIRED = 2
 
-        // Matches audio_service.dart's own 60s flood-prevention
-        // window (confirmed in real testing logs: "Monitoring context
-        // sleeping for 60s window to avoid flooding channels") —
-        // without this, a sustained loud sound would re-fire a fresh
-        // SMS/Telegram/dashboard alert every couple of seconds.
+        // ── Gate 3 + 4: streak average gates ──────────────────────────
+        // Applied AT confirmation time across the accumulated streak.
+        // Blocks weak pairs (21% + 22% = avg 21%) while keeping strong
+        // genuine pairs (95% + 31% = avg 63%).
+        private const val CONFIRMATION_MIN_AVG_CONFIDENCE = 0.35
+
+        // Blocks high-confidence detections from genuinely quiet audio
+        // (confirmed failure mode: RMS = 0.008 produced CNN 95%).
+        private const val CONFIRMATION_MIN_STREAK_AVG_RMS = 0.045
+
+        // ── Grace period ───────────────────────────────────────────────
+        // How many consecutive non-qualifying chunks (CNN says safe OR
+        // rms < threshold) are tolerated before the streak fully resets.
+        // 3 chunks = 9 seconds of continuous safe audio needed to wipe
+        // a genuine distress streak. Without this, a single breath or
+        // pause between cries resets the counter and forces a restart.
+        private const val MAX_CONSECUTIVE_MISSES = 3
+
+        // ── Alert flood prevention ─────────────────────────────────────
+        // Mirrors audio_service.dart's 60s cooldown exactly.
         private const val ALERT_COOLDOWN_MS = 60_000L
 
         // Bound on how long a single classify() call is allowed to
@@ -155,6 +180,19 @@ class DistressDetectionService : Service() {
     private var meshService: NativeMeshService? = null
     private var consecutiveDistressHits = 0
 
+    // ── Streak tracking variables (ported from audio_service.dart) ──
+    // consecutiveMisses: counts consecutive non-qualifying chunks.
+    // Reaches MAX_CONSECUTIVE_MISSES before streak is reset, so a
+    // single breath or brief quiet moment doesn't wipe a genuine
+    // distress streak (grace period logic).
+    private var consecutiveMisses = 0
+
+    // Accumulates CNN confidence and RMS of each qualifying chunk in
+    // the current streak, so the average gates can be applied at
+    // confirmation time rather than chunk-by-chunk.
+    private val streakConfidences = mutableListOf<Double>()
+    private val streakRmsValues   = mutableListOf<Double>()
+
     // Dedicated single-thread executor for CNN inference, isolated
     // from the audio capture thread (captureThread). Originally,
     // classify() ran directly inline inside the capture loop — real
@@ -176,6 +214,11 @@ class DistressDetectionService : Service() {
         detector = NativeDetectionService(applicationContext)
         alertService = NativeAlertService(applicationContext)
         meshService = NativeMeshService(applicationContext)
+        // Start proactive location tracking immediately so we have a
+        // cached fix ready at alert time — avoids the background-service
+        // location restriction on Android 10+ where getLastKnownLocation()
+        // returns null if called cold from a background thread.
+        alertService?.startLocationTracking()
         val loaded = detector?.loadModel() ?: false
         if (!loaded) {
             Log.e(TAG, "CNN model failed to load — falling back to RMS-only " +
@@ -243,6 +286,7 @@ class DistressDetectionService : Service() {
         }
         detector?.dispose()
         detector = null
+        alertService?.stopLocationTracking()
         alertService = null
         meshService?.dispose()
         meshService = null
@@ -309,7 +353,7 @@ class DistressDetectionService : Service() {
         }
         shouldRun = true
         isRunning = true
-        consecutiveDistressHits = 0
+        resetStreak()
         lastAlertSentAtMs = 0L
 
         captureThread = thread(start = true, name = "DistressCaptureThread") {
@@ -495,29 +539,98 @@ class DistressDetectionService : Service() {
                             "isDistress=${result.isDistress}")
 
                     if (result.isDistress) {
+                        // ── Qualifying hit ─────────────────────────────────────
+                        consecutiveMisses = 0
                         consecutiveDistressHits++
+                        streakConfidences.add(result.confidence)
+                        streakRmsValues.add(rms)
                         Log.i(TAG, "High-risk anomaly tracked! Run sequence count = " +
-                                "$consecutiveDistressHits/$CONSECUTIVE_HITS_REQUIRED")
+                                "$consecutiveDistressHits/$CONSECUTIVE_HITS_REQUIRED " +
+                                "(conf=${result.confidencePercent} rms=${"%.4f".format(rms)})")
 
                         if (consecutiveDistressHits >= CONSECUTIVE_HITS_REQUIRED) {
-                            consecutiveDistressHits = 0
-                            Log.i(TAG, "DISTRESS CONFIRMED — ${result.soundType} " +
-                                    "(${result.confidencePercent})")
-                            updateNotification("DISTRESS CONFIRMED",
-                                "${result.soundType} — ${result.confidencePercent} confidence. " +
-                                        "Sending alert...")
-                            sendConfirmedAlert(result.confidence, result.soundType)
+                            // ── Gate 3: average confidence across streak ───────
+                            val avgConf = streakConfidences.average()
+                            // ── Gate 4: average RMS energy of qualifying chunks
+                            val avgRms  = streakRmsValues.average()
+                            Log.i(TAG, "Streak gates check — " +
+                                    "avgConf=${"%.0f".format(avgConf * 100)}% " +
+                                    "(min=${(CONFIRMATION_MIN_AVG_CONFIDENCE * 100).toInt()}%) | " +
+                                    "avgRms=${"%.4f".format(avgRms)} " +
+                                    "(min=$CONFIRMATION_MIN_STREAK_AVG_RMS)")
+
+                            if (avgConf >= CONFIRMATION_MIN_AVG_CONFIDENCE &&
+                                avgRms  >= CONFIRMATION_MIN_STREAK_AVG_RMS) {
+                                Log.i(TAG, "DISTRESS CONFIRMED — ${result.soundType} " +
+                                        "(${result.confidencePercent}) " +
+                                        "avgConf=${"%.0f".format(avgConf * 100)}% " +
+                                        "avgRms=${"%.4f".format(avgRms)}")
+                                updateNotification(
+                                    "DISTRESS CONFIRMED",
+                                    "${result.soundType} — ${result.confidencePercent} confidence. " +
+                                            "Sending alert..."
+                                )
+                                resetStreak()
+                                sendConfirmedAlert(result.confidence, result.soundType)
+                            } else {
+                                val reason = when {
+                                    avgConf < CONFIRMATION_MIN_AVG_CONFIDENCE ->
+                                        "avg confidence ${"%.0f".format(avgConf * 100)}% " +
+                                                "below ${(CONFIRMATION_MIN_AVG_CONFIDENCE * 100).toInt()}% gate"
+                                    else ->
+                                        "avg RMS ${"%.4f".format(avgRms)} " +
+                                                "below $CONFIRMATION_MIN_STREAK_AVG_RMS gate"
+                                }
+                                Log.i(TAG, "Near-miss filtered — $reason. Resetting streak.")
+                                updateNotification(
+                                    "Monitoring active",
+                                    "Near-miss: $reason"
+                                )
+                                resetStreak()
+                            }
                         }
                     } else {
-                        consecutiveDistressHits = 0
-                        updateNotification("Monitoring active",
-                            "Last check: ${result.soundType} (${result.confidencePercent})")
+                        // ── Non-qualifying chunk: grace period before reset ───
+                        // Don't wipe the streak immediately — a single breath or
+                        // brief pause between distress sounds should not force
+                        // the counter all the way back to zero.
+                        consecutiveMisses++
+                        if (consecutiveMisses >= MAX_CONSECUTIVE_MISSES) {
+                            Log.i(TAG, "Streak reset — $MAX_CONSECUTIVE_MISSES " +
+                                    "consecutive non-qualifying chunks (grace period exceeded)")
+                            resetStreak()
+                        } else {
+                            Log.i(TAG, "Grace-period miss $consecutiveMisses/" +
+                                    "$MAX_CONSECUTIVE_MISSES — streak preserved " +
+                                    "(hits=$consecutiveDistressHits/$CONSECUTIVE_HITS_REQUIRED)")
+                        }
+                        updateNotification(
+                            "Monitoring active",
+                            "Last check: ${result.soundType} (${result.confidencePercent})"
+                        )
                     }
                 } else {
                     Log.w(TAG, "classify() returned null — detector not ready")
                 }
-            }
-        }
+            } else {
+                // ── Quiet chunk (rms < threshold): grace period ────────────
+                // If a streak is in progress, count this as a miss rather
+                // than silently skipping it, so genuine pauses between
+                // distress sounds don't accumulate invisibly. If no streak
+                // is active, just ignore the quiet chunk entirely.
+                if (consecutiveDistressHits > 0) {
+                    consecutiveMisses++
+                    if (consecutiveMisses >= MAX_CONSECUTIVE_MISSES) {
+                        Log.i(TAG, "Streak reset — $MAX_CONSECUTIVE_MISSES quiet chunks " +
+                                "during active streak (grace period exceeded)")
+                        resetStreak()
+                    } else {
+                        Log.i(TAG, "Grace-period quiet chunk $consecutiveMisses/" +
+                                "$MAX_CONSECUTIVE_MISSES — streak preserved")
+                    }
+                }
+            }   // end: if (rms > RMS_THRESHOLD) / else
+        }       // end: while (shouldRun)
 
         try {
             record.stop()
@@ -527,6 +640,16 @@ class DistressDetectionService : Service() {
         record.release()
         audioRecord = null
         Log.i(TAG, "Capture loop exited cleanly")
+    }
+
+    // ── Streak state reset ─────────────────────────────────────────────
+    // Single point of truth for clearing all four streak fields together.
+    // Called on: confirmed alert, near-miss filter, and startDetection().
+    private fun resetStreak() {
+        consecutiveDistressHits = 0
+        consecutiveMisses       = 0
+        streakConfidences.clear()
+        streakRmsValues.clear()
     }
 
     /**
