@@ -87,7 +87,7 @@ class NativeAlertService(private val context: Context) {
         // directly, not re-derived, so both pipelines hit the same
         // bot/chat.
         private const val TELEGRAM_BOT_TOKEN =
-            "8835166426:AAGgI_j20eSBK0Tv2koxTF17f29-1iN4MUs"
+            "API KEY"
         private const val TELEGRAM_CHAT_ID = "8418739667"
 
         private const val FALLBACK_PHONE = "+64225012439"
