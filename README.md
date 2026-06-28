@@ -2,7 +2,7 @@
 ### Autonomous Distress Detection and Delay-Tolerant Emergency Communication for Disaster Scenarios
 
 <p align="center">
-  <img src="docs/images/resqnet_banner.png" alt="ResQNet Banner" width="100%"/>
+  <img src="docs/images/resqnet_banner.jpeg" alt="ResQNet Banner" width="100%"/>
 </p>
 
 <p align="center">
@@ -35,29 +35,29 @@ The system combines:
 <table>
   <tr>
     <td align="center">
-      <img src="docs/images/app_home_screen.jpg" width="220" alt="Home Screen"/>
+      <img src="docs/images/app_home_screen.jpeg" width="220" alt="Home Screen"/>
       <br/><b>Home Screen</b>
     </td>
     <td align="center">
-      <img src="docs/images/app_disaster_mode.jpg" width="220" alt="Disaster Mode Active"/>
+      <img src="docs/images/app_disaster_mode.jpeg" width="220" alt="Disaster Mode Active"/>
       <br/><b>Disaster Mode Active</b>
     </td>
     <td align="center">
-      <img src="docs/images/app_alert_fired.jpg" width="220" alt="Alert Fired"/>
+      <img src="docs/images/app_alert_fired.jpeg" width="220" alt="Alert Fired"/>
       <br/><b>Distress Alert Fired</b>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <img src="docs/images/app_contacts.jpg" width="220" alt="Emergency Contacts"/>
+      <img src="docs/images/app_contacts.jpeg" width="220" alt="Emergency Contacts"/>
       <br/><b>Emergency Contacts</b>
     </td>
     <td align="center">
-      <img src="docs/images/app_history.jpg" width="220" alt="Alert History"/>
+      <img src="docs/images/app_history.jpeg" width="220" alt="Alert History"/>
       <br/><b>Alert History</b>
     </td>
     <td align="center">
-      <img src="docs/images/app_settings.jpg" width="220" alt="Settings"/>
+      <img src="docs/images/app_settings.jpeg" width="220" alt="Settings"/>
       <br/><b>Dashboard Settings</b>
     </td>
   </tr>
